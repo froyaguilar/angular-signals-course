@@ -57,3 +57,12 @@ You will want to use Signal Forms because they will be the **native, faster, and
 | **Scalability** | Low (best for simple forms) | High (ideal for complex forms) | High (designed for reactivity and scalability) |
 | **Ideal Use Case** | Very simple forms (e.g., login, newsletter) | Enterprise, dynamic, or complex forms | Modern, 100% Signal-based apps (Angular 21+) |
 | **Status Angular 21 (RC.0)** | Stable | Stable | **Experimental (Do not use in production)** |
+
+## Más información
+
+- [Intro to Signal Forms](./docs/00-signal-form-basic.md)
+- [Signal Forms States](./docs/01-signal-form-states.md)
+- [Built-in Validation](./docs/02-signal-form.builtin-validation.md)
+- [Custom Validation](./docs/03-signal-form-custom-validation.md)
+- [Async Validation using Http (validateHttp)](./docs/04-signal-form-async-validation-http.md)
+- [Async Validation (validateAsync)](./docs/05-signal-form-async-validation.md)
