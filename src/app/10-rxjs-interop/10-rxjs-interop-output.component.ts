@@ -43,7 +43,7 @@ export class TickDemoComponent {
   // A signal to hold the latest tick value in the parent
   parentTick = signal<number | undefined>(undefined);
 
-  constructor() {
+  ngAfterViewInit() {
     // Convert the child's tick OutputRef into an Observable,
     // auto-unsubscribe when this component is destroyed,
     // and write each tick into our signal.
