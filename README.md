@@ -31,7 +31,7 @@ Each lesson corresponds to a folder inside `src/app`, named numerically (`00`, `
 | 08 | [Router Integration](src/app/08-router/README.md)                                  | `src/app/08-router`                | [Link](https://www.youtube.com/watch?v=5FiRABxIo-8&list=PLcrGLrk890EFdWH31N-R8ymPxCGyi29w0&index=9) |
 | 09 | [Async Patterns and Fetching Data](src/app/09-async/README.md)                     | `src/app/09-async`                 | [Link](https://www.youtube.com/watch?v=0dfp1hCWE1I&list=PLcrGLrk890EFdWH31N-R8ymPxCGyi29w0&index=10) |
 | 10 | [RxJS Interop](src/app/10-rxjs-interop/README.md)                                  | `src/app/10-rxjs-interop`          | [Link](https://www.youtube.com/watch?v=8GHbVGuaFjU&list=PLcrGLrk890EFdWH31N-R8ymPxCGyi29w0&index=11) |
-| 11 | [Signal Forms](src/app/11-signal-forms/README.md)                                  | `src/app/11-signal-forms`          | Coming soon |
+| 11 | [Signal Forms](src/app/11-forms/README.md)                                  | `src/app/11-signal-forms`          | Coming soon |
 
 ---
 
