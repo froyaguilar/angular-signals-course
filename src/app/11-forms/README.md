@@ -23,7 +23,7 @@ Reactive Forms rely on `zone.js` to know when a form has been updated and when t
 * **The Solution (Signals):** Signal Forms don't need `zone.js`. When a signal's value changes (e.g., `form.value()`), Angular knows *exactly* which part of the DOM to update, without needing a global change detection mechanism.
 
 #### 3. Declarative and Simpler API
-The experimental API (`form(signal, path => ...)` or `form({ ctrl: control(...) })`) is designed to be more declarative and less verbose than Reactive Forms.
+The experimental API (`form(signal, path => ...)` is designed to be more declarative and less verbose than Reactive Forms.
 
 * **The Problem:** Reactive Forms require significant boilerplate (`FormBuilder.group`, `FormArray`, `Validators.required`, etc.). Asynchronous validation (`AsyncValidatorFn`) is complex and heavily reliant on RxJS.
 * **The Solution (Signals):** The new API integrates validation more cleanly.
@@ -49,7 +49,7 @@ You will want to use Signal Forms because they will be the **native, faster, and
 | Feature | Template-Driven (TDF) | Reactive Forms (RF) | Signal Forms (Experimental) |
 | :--- | :--- | :--- | :--- |
 | **Source of Truth** | The template (HTML) | The component (TypeScript) | The component (Signals) |
-| **Setup** | Minimal (import `FormsModule`) | Explicit (import `ReactiveFormsModule`, use `FormBuilder`, `FormGroup`, `FormControl`) | Explicit (import `Field`, `form`, `control` from `@angular/forms/signals`) |
+| **Setup** | Minimal (import `FormsModule`) | Explicit (import `ReactiveFormsModule`, use `FormBuilder`, `FormGroup`, `FormControl`) | Explicit (import `Field`, `form`, from `@angular/forms/signals`) |
 | **Data Flow** | Two-way (`[(ngModel)]`) | One-way (model to view) | Reactive (Signal-based) |
 | **Validation** | In the template (HTML attributes) | In the component (functions) | In the component (functions) |
 | **Async Validation**| Complex (requires custom directives) | Supported (Observables) | Natively supported (`validateHttp`, `validateAsync`) |
