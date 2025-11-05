@@ -22,7 +22,7 @@ Each lesson corresponds to a folder inside `src/app`, named numerically (`00`, `
 |:--:|-------------------------------------------------------------------------------------|:----------------------------------:|:--------------|
 | 00 | [Intro to Change Detection](src/app/00-change-detection/README.md)                 | `src/app/00-change-detection`      | [Link](https://youtu.be/rr0AstaFLV8?si=PmZ4skLuZ2s6iyww) |
 | 01 | [Writable & Readonly Signals](src/app/01-counter-signal/README.md)                 | `src/app/01-counter-signal`        | [Link](https://www.youtube.com/watch?v=BcpAFtGm2FY&list=PLcrGLrk890EFdWH31N-R8ymPxCGyi29w0&index=2) |
-| 02 | [Computed Signals](src/app/02-counter-computed/README.md)                          | `src/app/02-counter-computed`      | [Link](https://www.youtube.com/watch?v=-z2hbTBAvdc&list=PLcrGLrk890EFdWH31N-R8ymPxCGyi29w0&index=3&t=2s) |
+| 02 | [Computed Signals](src/app/02-counter-computed/README.md)                          | `src/app/02-counter-computed`      | [Link](https://www.youtube.com/watch?v=-z2hbTBAvdc&list=PLcrGLrk890EFdWH31N-R8ymPxCGyi29w0&index=3) |
 | 03 | [Effects and Side Effects](src/app/03-counter-effect/README.md)                    | `src/app/03-counter-effect`        | [Link](https://www.youtube.com/watch?v=zT6Kr0eVZxI&list=PLcrGLrk890EFdWH31N-R8ymPxCGyi29w0&index=4) |
 | 04 | [LinkedSignal API](src/app/04-linked-signal/README.md)                             | `src/app/04-linked-signal`         | [Link](https://www.youtube.com/watch?v=IHXK4xUU48Q&list=PLcrGLrk890EFdWH31N-R8ymPxCGyi29w0&index=5) |
 | 05 | [Input/Output with Signals](src/app/05-input-output-signal/README.md)              | `src/app/05-input-output-signal`   | [Link](https://www.youtube.com/watch?v=emMRF_6GKuw&list=PLcrGLrk890EFdWH31N-R8ymPxCGyi29w0&index=6) |
@@ -31,6 +31,7 @@ Each lesson corresponds to a folder inside `src/app`, named numerically (`00`, `
 | 08 | [Router Integration](src/app/08-router/README.md)                                  | `src/app/08-router`                | [Link](https://www.youtube.com/watch?v=5FiRABxIo-8&list=PLcrGLrk890EFdWH31N-R8ymPxCGyi29w0&index=9) |
 | 09 | [Async Patterns and Fetching Data](src/app/09-async/README.md)                     | `src/app/09-async`                 | [Link](https://www.youtube.com/watch?v=0dfp1hCWE1I&list=PLcrGLrk890EFdWH31N-R8ymPxCGyi29w0&index=10) |
 | 10 | [RxJS Interop](src/app/10-rxjs-interop/README.md)                                  | `src/app/10-rxjs-interop`          | [Link](https://www.youtube.com/watch?v=8GHbVGuaFjU&list=PLcrGLrk890EFdWH31N-R8ymPxCGyi29w0&index=11) |
+| 11 | [Signal Forms](src/app/11-signal-forms/README.md)                                  | `src/app/11-signal-forms`          | Coming soon |
 
 ---
 
