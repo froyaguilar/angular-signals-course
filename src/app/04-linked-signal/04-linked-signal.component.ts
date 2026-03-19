@@ -1,51 +1,45 @@
-import { ChangeDetectionStrategy, Component, Signal, WritableSignal, linkedSignal, signal } from '@angular/core';
-
+import { ChangeDetectionStrategy, Component, WritableSignal, linkedSignal, signal } from '@angular/core';
 import { JsonPipe } from '@angular/common';
 
 @Component({
-  selector: 'dottech-linked-signal-race-solution',
+  selector: 'app-linked-signal',
   standalone: true,
   imports: [JsonPipe],
-  changeDetection: ChangeDetectionStrategy.OnPush,
   template: `
-    <h1>point = {{ point() | json }}</h1>
+    <h1>Punto = {{ point() | json }}</h1>
     <button (click)="moveConcurrently(1, 1)">
-      Move Concurrently (+1, +1) Twice
+      Mover Concurrentemente (+1, +1) dos veces
     </button>
-  `
+  `,
+  // OnPush es ideal aquí ya que manejamos todo con signals.
+  changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class LinkedSignalComponent {
-   // 1️⃣ Two independent base signals for X and Y
-   readonly x: WritableSignal<number> = signal(0);
-   readonly y: WritableSignal<number> = signal(0);
+  /**
+   * 1️⃣ Dos signals bases independientes para X e Y.
+   */
+  readonly x = signal(0);
+  readonly y = signal(0);
 
-   // 2️⃣ linkedSignal (single-computation overload) returns a WritableSignal<{ x, y }>
-   readonly point: WritableSignal<{ x: number; y: number }> = linkedSignal(() => ({
-     x: this.x(),
-     y: this.y()
-   }));
+  /**
+   * 2️⃣ linkedSignal: Crea un signal de escritura que se "vincula" a otros.
+   * Si 'x' o 'y' cambian, 'point' se reinicia con el nuevo valor calculado.
+   * Sin embargo, 'point' también permite ser actualizado manualmente con .set() o .update().
+   */
+  readonly point = linkedSignal(() => ({
+    x: this.x(),
+    y: this.y()
+  }));
 
-   // 3️⃣ Simulate two “clicks” occurring at almost the same time
-   moveConcurrently(dx: number, dy: number) {
+  /**
+   * 3️⃣ Simula dos "clics" que ocurren casi al mismo tiempo.
+   * Gracias a .update() en un linkedSignal, las actualizaciones son atómicas.
+   */
+  moveConcurrently(dx: number, dy: number) {
     const updater = () => this.point.update(({ x, y }) => ({ x: x + dx, y: y + dy }));
-    setTimeout(updater, Math.random() * 1000);
-    setTimeout(updater, Math.random() * 1000);
-
-   }
-
-   // 4️⃣ Private helper that uses the linkedSignal API atomically
-/*    private move(dx: number, dy: number) {
-     // point.update(...) reads {x,y}, applies the function, and writes both back atomically
-     this.point.update(({ x, y }) => ({
-       x: x + dx,
-       y: y + dy
-     }));
-   } */
-
-   private move(dx: number, dy: number) {
-    const updater = () => this.point.update(({ x, y }) => ({ x: x + dx, y: y + dy }));
-    setTimeout(updater, Math.random() * 50);
-    setTimeout(updater, Math.random() * 50);
+    
+    // Ejecutamos dos actualizaciones con un pequeño retraso aleatorio
+    setTimeout(updater, Math.random() * 500);
+    setTimeout(updater, Math.random() * 500);
   }
-
 }

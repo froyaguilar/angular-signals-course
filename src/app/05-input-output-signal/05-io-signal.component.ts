@@ -2,51 +2,67 @@ import { ChangeDetectionStrategy, Component, effect, input, output, signal } fro
 
 @Component({
   selector: 'app-child-signals',
+  standalone: true,
   template: `
-    <p>Count = {{ count() }}</p>
-    <!-- No boilerplate: just call .emit() on the SignalEmitterRef -->
-    <button (click)="notify()">Notify Parent</button>
+    <p>Contador = {{ count() }}</p>
+    <!-- Sin boilerplate: solo llama a .emit() en el OutputEmitterRef -->
+    <button (click)="notify()">Notificar al Padre</button>
   `
 })
 export class ChildSignalsComponent {
-  // ✅ InputSignal: automatically updates when parent signal changes
-  readonly count = input<number>();
+  /**
+   * ✅ input(): Crea un InputSignal que se actualiza automáticamente.
+   * Es de solo lectura dentro del componente.
+   */
+  readonly count = input<number>(0);
 
-  // ✅ SignalEmitterRef: lightweight alternative to EventEmitter
+  /**
+   * ✅ output(): Alternativa ligera a EventEmitter.
+   * Sigue el mismo patrón de nombres que los signals.
+   */
   readonly increment = output<void>();
 
   constructor() {
-    // ✅ Automatic dependency tracking: no ngOnChanges needed
+    /**
+     * ✅ Seguimiento de dependencias automático.
+     * Ya no necesitamos ngOnChanges para reaccionar a cambios en los inputs.
+     */
     effect(() => {
-      console.log('🔄 [effect] count changed to', this.count());
+      console.log('🔄 [Efecto] El contador cambió a', this.count());
     });
   }
 
   notify() {
-    // ✅ emit like a signal, integrates with Angular reactivity
+    /**
+     * ✅ emit(): Funciona de forma similar al tradicional, pero más ligero.
+     */
     this.increment.emit();
   }
 }
 
-
 @Component({
   selector: 'app-parent-signals',
+  standalone: true,
   imports: [ChildSignalsComponent],
+  // Con Signals, OnPush es el valor por defecto recomendado para el mejor rendimiento.
   changeDetection: ChangeDetectionStrategy.OnPush,
   template: `
-    <h2>Parent using signals</h2>
-    <!-- Reactive signal update; UI updates automatically -->
-    <button (click)="incrementCount()">+1</button>
-    <!-- Pass the signal itself, not a plain value -->
+    <h2>Padre usando Signals (Forma moderna)</h2>
+    <!-- Actualización reactiva del signal; la UI se marca para revisión automáticamente -->
+    <button (click)="incrementCount()">+1 desde Padre</button>
+    
+    <!-- Pasamos el valor del signal. Angular rastrea la dependencia. -->
     <app-child-signals
       [count]="count()"
       (increment)="onIncrement()">
     </app-child-signals>
-    <p>Parent sees count = {{ count() }}</p>
+    <p>El padre ve el contador = {{ count() }}</p>
   `
 })
 export class ParentSignalsComponent {
-  // ✅ WritableSignal: exposes .set() and .update(), reactive by default
+  /**
+   * ✅ signal(): Estado base de la aplicación.
+   */
   count = signal(0);
 
   incrementCount() {
@@ -54,7 +70,7 @@ export class ParentSignalsComponent {
   }
 
   onIncrement() {
-    console.log('🔔 [Signal] Child requested increment');
+    console.log('🔔 [Signal] El hijo solicitó un incremento');
     this.incrementCount();
   }
 }

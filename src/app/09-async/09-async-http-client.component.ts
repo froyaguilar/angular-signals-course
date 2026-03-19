@@ -1,21 +1,23 @@
-// classic-todos.component.ts
 import { ChangeDetectionStrategy, ChangeDetectorRef, Component, OnDestroy, OnInit, inject } from '@angular/core';
-
 import { HttpClient } from '@angular/common/http';
 import { Subscription } from 'rxjs';
 
 @Component({
   selector: 'app-classic-todos',
+  standalone: true,
   imports: [],
   changeDetection: ChangeDetectionStrategy.OnPush,
   template: `
-    <h2>Classic Todos Fetch</h2>
+    <h2>Obtención de Todos (Clásico con HttpClient)</h2>
+    
     @if (loading) {
-      <p>Loading...</p>
+      <p>Cargando...</p>
     }
+    
     @if (error) {
       <p>Error: {{ error }}</p>
     }
+    
     @if (!loading && !error) {
       <ul>
         @for (todo of todos; track todo.id) {
@@ -23,31 +25,46 @@ import { Subscription } from 'rxjs';
         }
       </ul>
     }
-    <button (click)="reload()">Reload</button>
+    <button (click)="reload()">Recargar</button>
   `
 })
 export class ClassicTodosComponent implements OnInit, OnDestroy {
+  /**
+   * Estado gestionado mediante propiedades normales.
+   * OnPush no detectará cambios automáticamente al completarse la petición HTTP
+   * porque la petición ocurre fuera de la zona de Angular o simplemente no hay
+   * un trigger reactivo automático aquí.
+   */
   todos: Array<{ id: number; title: string }> = [];
   loading = false;
   error?: string;
+
   private sub!: Subscription;
-  readonly http = inject(HttpClient);
-  readonly cdr = inject(ChangeDetectorRef);
+  private readonly http = inject(HttpClient);
+  private readonly cdr = inject(ChangeDetectorRef);
 
   ngOnInit() {
     this.load();
   }
+
   private load() {
     this.loading = true;
     this.error = undefined;
+    /**
+     * ❌ Necesitamos marcar manualmente para revisión ANTES de la petición
+     * para mostrar el estado de carga.
+     */
     this.cdr.markForCheck();
 
     this.sub = this.http.get<Array<{ id: number; title: string }>>(
-      'https://jsonplaceholder.typicode.com/posts'
+      'https://jsonplaceholder.typicode.com/todos'
     ).subscribe({
       next: data => {
         this.todos = data;
         this.loading = false;
+        /**
+         * ❌ Y OTRA VEZ después de recibir los datos.
+         */
         this.cdr.markForCheck();
       },
       error: err => {
@@ -59,11 +76,18 @@ export class ClassicTodosComponent implements OnInit, OnDestroy {
   }
 
   reload() {
-    this.sub.unsubscribe();
+    if (this.sub) {
+      this.sub.unsubscribe();
+    }
     this.load();
   }
 
   ngOnDestroy() {
-    this.sub.unsubscribe();
+    /**
+     * ❌ Siempre debemos limpiar las suscripciones.
+     */
+    if (this.sub) {
+      this.sub.unsubscribe();
+    }
   }
 }

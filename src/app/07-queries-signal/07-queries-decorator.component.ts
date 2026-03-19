@@ -9,26 +9,38 @@ import {
 } from '@angular/core';
 
 @Component({
-  selector: 'app-no-signals',
+  selector: 'app-queries-decorator',
+  standalone: true,
   changeDetection: ChangeDetectionStrategy.OnPush,
   template: `
-    <input #inputRef type="text" placeholder="Type something…" (input)="readValue()" />
-    <p>Value = {{ value }}</p>
+    <h2>Consultas con Decoradores (Forma antigua)</h2>
+    <input #inputRef type="text" placeholder="Escribe algo…" (input)="readValue()" />
+    <p>Valor = {{ value }}</p>
   `
 })
 export class QueriesDecoratorComponent implements AfterViewInit {
+  /**
+   * ❌ @ViewChild: Decorador tradicional para obtener una referencia del DOM.
+   * Por defecto, el valor es undefined hasta que se completa la fase AfterViewInit.
+   */
   @ViewChild('inputRef') inputRef!: ElementRef<HTMLInputElement>;
 
-  cdr : ChangeDetectorRef = inject(ChangeDetectorRef);
+  private cdr = inject(ChangeDetectorRef);
   value = '';
 
   ngAfterViewInit() {
-    // ❌ Must wait for view init before inputRef is ready
-    console.log('Input element is ready:', this.inputRef);
+    /**
+     * ❌ Debemos esperar obligatoriamente a AfterViewInit para acceder a la referencia.
+     */
+    console.log('El elemento input ya está listo:', this.inputRef);
   }
 
   readValue() {
-    // ❌ Manual read + manual change‑detection
+    /**
+     * ❌ Lectura manual y disparo manual de la detección de cambios.
+     * Al usar OnPush, si actualizamos una propiedad normal de forma manual,
+     * debemos avisar a Angular que revise la vista.
+     */
     this.value = this.inputRef.nativeElement.value;
     this.cdr.markForCheck();
   }

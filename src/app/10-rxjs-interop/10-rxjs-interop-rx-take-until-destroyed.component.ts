@@ -1,22 +1,31 @@
-import { ChangeDetectionStrategy, Component, effect } from '@angular/core';
-import { takeUntilDestroyed, toSignal } from '@angular/core/rxjs-interop';
-
-// take-until-destroyed.component.ts
+import { ChangeDetectionStrategy, Component } from '@angular/core';
+import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { AsyncPipe } from '@angular/common';
-import { interval } from 'rxjs';
+import { interval, tap } from 'rxjs';
 
 @Component({
   selector: 'app-take-until-destroyed',
+  standalone: true,
   changeDetection: ChangeDetectionStrategy.OnPush,
   imports: [AsyncPipe],
   template: `
-    <h2>Auto Unsubscribe Ticker</h2>
-    <p>Count = {{ counter | async }}</p>
+    <h2>RxJS Interop: takeUntilDestroyed</h2>
+    <p>Contador (vía Pipe Async) = {{ counter | async }}</p>
+    <p><small>Mira la consola para ver cómo se detiene al destruir el componente.</small></p>
   `
 })
 export class TakeUntilDestroyedComponent {
-  // interval as Observable
-  private ticker$ = interval(500);
+  /**
+   * Un Observable que emite valores cada 500ms.
+   */
+  private ticker$ = interval(500).pipe(
+    tap(v => console.log('Tick del Observable:', v))
+  );
 
-  readonly counter = this.ticker$.pipe(takeUntilDestroyed())
+  /**
+   * ✅ takeUntilDestroyed(): Operador que completa automáticamente el Observable
+   * cuando el contexto de inyección (el componente) se destruye.
+   * Evita fugas de memoria sin necesidad de ngOnDestroy ni Subscription.unsubscribe().
+   */
+  readonly counter = this.ticker$.pipe(takeUntilDestroyed());
 }

@@ -1,38 +1,45 @@
-import { ChangeDetectionStrategy, Component, Signal, WritableSignal, effect, signal } from '@angular/core';
+import { ChangeDetectionStrategy, Component, WritableSignal, effect, signal } from '@angular/core';
 
 @Component({
-  selector: 'dottech-counter-effect',
-  changeDetection: ChangeDetectionStrategy.OnPush,
+  selector: 'app-counter-effect',
+  standalone: true,
   template: `
-    <h1>count (writable signal) = {{ count() }}</h1>
-    <button (click)="increment()">Increment</button>
-  `
+    <h1>Contador: {{ count() }}</h1>
+    <button (click)="increment()">Incrementar</button>
+  `,
+  changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class CounterEffectComponent {
-  // 1️⃣ WritableSignal: holds our counter value
+  /**
+   * Signal de escritura para llevar la cuenta.
+   */
   readonly count: WritableSignal<number> = signal(0);
 
-  // 2️⃣ Effect: runs on subscription and whenever `count` changes
+  /**
+   * Un efecto (effect) es una operación que se ejecuta cada vez que 
+   * cambian los signals que consume.
+   * Se usa para efectos secundarios (side-effects) como:
+   * - Sincronizar con el almacenamiento local (localStorage).
+   * - Manipulación manual del DOM o APIs del navegador (ej. cambiar el título).
+   * - Logging o telemetría.
+   */
   private readonly logAndTitleEffect = effect(() => {
     const current = this.count();
-    // Side-effect #1: log to console
-    console.log(`🟢 [Effect] count changed to ${current}`);
-    // Side-effect #2: update document title
-    //typeof document !== 'undefined' && (document as Document).title = `Count is ${current}`;
-    (document as Document).title = `Count is ${current}`;
-
-    // You could return a cleanup function here if you, for example,
-    // set up an external subscription that needs tearing down:
-    // return () => unsubscribeFromSomething();
+    
+    // Efecto secundario #1: Registro en consola
+    console.log(`🟢 [Efecto] El contador cambió a ${current}`);
+    
+    // Efecto secundario #2: Actualizar el título de la página
+    if (typeof document !== 'undefined') {
+      document.title = `Contador: ${current}`;
+    }
   });
 
-  constructor() {
-    // Effects run immediately once on creation:
-    // logs "count changed to 0" and sets title to "Count is 0"
-  }
-
   increment() {
-    // Update the writable signal; triggers the effect automatically
+    /**
+     * Al actualizar el signal, Angular programa la ejecución del efecto
+     * para que corra después de la detección de cambios.
+     */
     this.count.update(currentValue => currentValue + 1);
   }
 }

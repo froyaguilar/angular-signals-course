@@ -2,38 +2,49 @@ import { Component, EventEmitter, Input, OnChanges, Output, SimpleChanges } from
 
 @Component({
   selector: 'app-child-decorator',
+  standalone: true,
   template: `
-    <p>Count = {{ count }}</p>
-    <!-- Imperative event emitter -->
-    <button (click)="notify()">Notify Parent</button>
+    <p>Contador = {{ count }}</p>
+    <!-- Emisión imperativa de eventos -->
+    <button (click)="notify()">Notificar al Padre</button>
   `
 })
 export class ChildDecoratorComponent implements OnChanges {
-  // ❌ Plain number input: no built‑in reactivity, relies on ngOnChanges
+  /**
+   * ❌ Input tradicional con decorador. 
+   * No es reactivo por sí mismo, depende de ngOnChanges para detectar cambios.
+   */
   @Input() count!: number;
 
-  // ❌ Extra boilerplate: must declare an EventEmitter for output
+  /**
+   * ❌ Output tradicional. 
+   * Requiere instanciar EventEmitter y manejo manual.
+   */
   @Output() increment = new EventEmitter<void>();
 
   ngOnChanges(ch: SimpleChanges) {
-    // ❌ Lifecycle hook needed just to detect updates
-    console.log('🔄 [ngOnChanges] count changed to', this.count);
+    // ❌ Gancho de ciclo de vida necesario solo para detectar actualizaciones.
+    console.log('🔄 [ngOnChanges] El contador cambió a', this.count);
   }
 
   notify() {
-    // ❌ Manual emit call
+    /**
+     * ❌ Llamada manual a .emit()
+     */
     this.increment.emit();
   }
 }
 
 @Component({
   selector: 'app-parent-decorator',
+  standalone: true,
   imports: [ChildDecoratorComponent],
   template: `
-    <h2>Parent using decorators</h2>
-    <!-- Manual state mutation; no reactive tracking -->
-    <button (click)="incrementCount()">+1</button>
-    <!-- Must bind both a value and an event emitter -->
+    <h2>Padre usando Decoradores (Forma antigua)</h2>
+    <!-- Mutación de estado manual; sin seguimiento reactivo fino -->
+    <button (click)="incrementCount()">+1 desde Padre</button>
+    
+    <!-- Debemos vincular tanto el valor como el emisor de eventos -->
     <app-child-decorator
       [count]="count"
       (increment)="onIncrement()">
@@ -48,7 +59,7 @@ export class ParentDecoratorComponent {
   }
 
   onIncrement() {
-    console.log('🔔 Child requested increment');
+    console.log('🔔 El hijo solicitó un incremento');
     this.count++;
   }
 }

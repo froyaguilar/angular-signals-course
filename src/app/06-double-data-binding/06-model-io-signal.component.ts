@@ -7,12 +7,13 @@ import {
 } from '@angular/core';
 
 @Component({
-  selector: 'app-child', // The selector the parent will use
+  selector: 'app-child-model',
+  standalone: true,
   changeDetection: ChangeDetectionStrategy.OnPush,
   template: `
     <div class="child-box">
-      <p>Child count = {{ count() }}</p>
-      <button (click)="increment()">Increment from Child</button>
+      <p>Contador del Hijo = {{ count() }}</p>
+      <button (click)="increment()">Incrementar desde el Hijo</button>
     </div>
   `,
   styles: `
@@ -25,36 +26,45 @@ import {
     `,
 })
 export class ChildComponent {
-  // ✅ Replaces 'input' and 'output' with a single 'model()'.
-  // 'model.required' indicates the parent MUST provide a value.
+  /**
+   * ✅ model(): Reemplaza a 'input' y 'output' con un solo signal.
+   * Crea automáticamente un input 'count' y un output 'countChange'.
+   * 'model.required' indica que el padre DEBE proporcionar un valor.
+   */
   readonly count = model.required<number>();
 
   constructor() {
-    // ✅ The 'effect' still works the same, as 'count' is a Signal.
+    /**
+     * El efecto funciona igual, ya que 'count' es un Signal al fin y al cabo.
+     */
     effect(() => {
-      console.log('🔄 [effect] Child count changed to', this.count());
+      console.log('🔄 [Efecto] El contador del hijo cambió a', this.count());
     });
   }
 
   increment() {
-    // ✅ Instead of emitting an event, the child updates the 'model' directly.
-    // This change automatically propagates to the parent.
+    /**
+     * ✅ En lugar de emitir un evento manualmente, el hijo actualiza el 'model' directamente.
+     * Este cambio se propaga automáticamente al padre si se usa doble enlace [(count)].
+     */
     this.count.update((v) => v + 1);
   }
 }
 
 @Component({
-  selector: 'app-root',
-  imports: [ChildComponent], // Import the standalone child component
+  selector: 'app-parent-model-io',
+  standalone: true,
+  imports: [ChildComponent],
   changeDetection: ChangeDetectionStrategy.OnPush,
   template: `
     <div class="parent-box">
-      <h2>Parent using model()</h2>
-      <button (click)="incrementCount()">+1 from Parent</button>
+      <h2>Padre usando model() para Doble Enlace</h2>
+      <button (click)="incrementCount()">+1 desde el Padre</button>
 
-      <app-child [(count)]="count"></app-child>
+      <!-- Usamos la sintaxis "banana-in-a-box" [(...)] para el doble enlace automático -->
+      <app-child-model [(count)]="count"></app-child-model>
 
-      <p class="parent-count">Parent sees count = {{ count() }}</p>
+      <p class="parent-count">El padre ve el contador = {{ count() }}</p>
     </div>
   `,
   styles: `
@@ -78,12 +88,15 @@ export class ChildComponent {
     `,
 })
 export class ModelIOSignalComponent {
-  // The parent's Signal remains the source of truth.
+  /**
+   * El signal del padre sigue siendo la fuente de la verdad.
+   */
   count = signal(0);
 
   incrementCount() {
     this.count.update((v) => v + 1);
   }
 
-  // ❌ The 'onIncrement()' event handler method is no longer needed and has been removed.
+  // ✅ Ya no necesitamos un método 'onIncrement()' para escuchar eventos del hijo.
+  // El doble enlace se encarga de todo.
 }

@@ -1,20 +1,30 @@
 import { ChangeDetectionStrategy, Component, signal } from "@angular/core";
-
-import { ChildComponent } from "./signal-change-detection-child.component";
+import { SignalChildComponent } from "./signal-change-detection-child.component";
 
 @Component({
-  selector: 'app-parent',
-  imports: [ChildComponent],
+  selector: 'app-parent-signal',
+  standalone: true,
+  imports: [SignalChildComponent],
   template: `
-    <button (click)="changeUser()">Change user</button>
-    <app-child [user]="userSignal()"></app-child>
+    <button (click)="changeUser()">Cambiar usuario</button>
+    <!-- Pasamos el valor del signal al componente hijo.
+         Angular rastrea que el hijo depende de este signal. -->
+    <app-child-signal [user]="userSignal()"></app-child-signal>
   `,
+  // Usamos OnPush también en el padre para máxima eficiencia.
   changeDetection: ChangeDetectionStrategy.OnPush
 })
-export class ParentComponent {
+export class SignalParentComponent {
+  /**
+   * Signal que contiene el objeto usuario.
+   */
   userSignal = signal({ name: 'Carlos' });
 
+  /**
+   * Al usar .set(), notificamos a todos los consumidores (incluyendo la plantilla
+   * y el componente hijo) que el valor ha cambiado.
+   */
   changeUser() {
-    this.userSignal.set({ name: 'New Name ' + Math.random().toFixed(2) });
+    this.userSignal.set({ name: 'Nombre ' + Math.random().toFixed(2) });
   }
 }

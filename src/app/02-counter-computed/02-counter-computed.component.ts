@@ -1,59 +1,61 @@
 import { ChangeDetectionStrategy, Component, Signal, WritableSignal, computed, signal } from '@angular/core';
 
 @Component({
-  selector: 'dottech-counter-signal',
-  changeDetection: ChangeDetectionStrategy.OnPush,
+  selector: 'app-counter-computed',
+  standalone: true,
   template: `
-    <h1>count0 (plain property) = {{ count0 }}</h1>
-    <h1>count1 (writable signal) = {{ count1() }}</h1>
-    <h1>count2 (readonly signal) = {{ count2() }}</h1>
-    <h1>doubleCount (computed) = {{ doubleCount() }}</h1>
-    <h1>label (computed) = {{ label() }}</h1>
+    <h1>count0 (Propiedad normal) = {{ count0 }}</h1>
+    <h1>count1 (Signal de escritura) = {{ count1() }}</h1>
+    <h1>count2 (Signal de solo lectura) = {{ count2() }}</h1>
+    <h1>doubleCount (Computed - Doble) = {{ doubleCount() }}</h1>
+    <h1>etiqueta (Computed - Texto) = {{ label() }}</h1>
 
-    <button (click)="increment()">Increment</button>
-  `
+    <button (click)="increment()">Incrementar</button>
+  `,
+  changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class CounterComputedComponent {
-  // 1️⃣ Plain component property
+  // 1️⃣ Propiedad de clase normal. No es reactiva por sí sola con OnPush.
   count0: number = 0;
 
-  // 2️⃣ WritableSignal: can use .set() and .update()
+  // 2️⃣ WritableSignal: Puede usar .set() y .update().
   readonly count1: WritableSignal<number> = signal(0);
 
-  // 3️⃣ Readonly Signal: cannot be modified directly
+  // 3️⃣ Signal de solo lectura: No se puede modificar directamente desde fuera.
   readonly count2: Signal<number> = this.count1.asReadonly();
 
-  // 4️⃣ Computed signal that derives double the count1 value
+  // 4️⃣ Signal computado (computed): Deriva un valor basado en otros signals.
+  // Se actualiza automáticamente cuando sus dependencias cambian.
   readonly doubleCount: Signal<number> = computed(() => this.count1() * 2);
 
-  // 5️⃣ Computed signal with conditional text based on count1
+  // 5️⃣ Signal computado con lógica condicional.
   readonly label: Signal<string> = computed(() => {
-    // Lazy and efficient: only recalculates when count1 changes
-    // count1() is only evaluated when needed and use () to access its value
-    // count1() use memoization to avoid unnecessary recalculations
-    // This is a lazy evaluation: it only runs when the value is needed
-    // and it caches the result until count1 changes.
-    return this.count1() === 0
-      ? 'You haven\'t clicked yet'
-      : `You have clicked ${this.count1()} ${this.count1() === 1 ? 'time' : 'times'}!`;
+    /**
+     * Los computed son perezosos (lazy) y eficientes:
+     * - Solo se recalculan si los signals que consumen (count1) cambian.
+     * - Memorizan el resultado: si se leen varias veces, devuelven el valor cacheado.
+     */
+    const val = this.count1();
+    if (val === 0) {
+      return 'Aún no has hecho clic';
+    }
+    return `¡Has hecho clic ${val} ${val === 1 ? 'vez' : 'veces'}!`;
   });
 
   increment() {
-    console.log('Updating counters…');
+    console.log('Actualizando contadores…');
 
-    // Increment plain property
+    // Incremento normal
     this.count0 += 1;
 
-    // Update writable signal using .set()
-    //this.count1.set(this.count1() + 1);
-
-    // Update writable signal using .update() for atomic increment
+    /**
+     * Actualizamos el signal de escritura. 
+     * Esto notificará automáticamente a 'doubleCount' y 'label' 
+     * para que se marquen como sucios y se recalculen cuando sea necesario.
+     */
     this.count1.update(v => v + 1);
 
-    // count2 is readonly: the following would be errors
-    // this.count2.set(...)    // ❌ Not allowed
-    // this.count2.update(...) // ❌ Not allowed
-
-    // Computed signals (doubleCount, label) update automatically
+    // Los signals computados no se pueden modificar manualmente.
+    // this.doubleCount.set(10); // ❌ Error
   }
 }

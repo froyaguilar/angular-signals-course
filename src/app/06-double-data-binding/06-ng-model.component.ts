@@ -3,15 +3,19 @@ import { FormsModule } from '@angular/forms';
 
 @Component({
   selector: 'app-classic-two-way',
+  standalone: true,
   imports: [FormsModule],
   template: `
-    <h2>Classic [(ngModel)] Binding</h2>
-    <!-- Requires FormsModule and ngModel directive -->
-    <input [(ngModel)]="name" placeholder="Enter your name">
-    <p>Hello, {{ name }}!</p>
+    <h2>Doble enlace clásico con [(ngModel)]</h2>
+    <!-- Requiere FormsModule y la directiva ngModel -->
+    <input [(ngModel)]="name" placeholder="Introduce tu nombre">
+    <p>Hola, {{ name }}!</p>
   `
 })
 export class ClassicTwoWayComponent {
-  // Plain property bound via ngModel
+  /**
+   * Propiedad normal vinculada a través de ngModel.
+   * No es tan eficiente como los Signals para actualizaciones granulares.
+   */
   name: string = '';
 }

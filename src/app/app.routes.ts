@@ -1,6 +1,11 @@
 import { Routes } from '@angular/router';
 
+/**
+ * ✅ Definición de rutas de la aplicación.
+ * Cada ruta carga su componente de forma diferida (lazy loading).
+ */
 export const routes: Routes = [
+  // --- DETECCIÓN DE CAMBIOS (Change Detection) ---
   {
     path: 'default-change-detection-indirect',
     loadComponent: () => import('./00-change-detection/default-change-detection/default-change-detection-parent.component').then(m => m.ParentComponent),
@@ -21,6 +26,8 @@ export const routes: Routes = [
     loadComponent: () => import('./00-change-detection/signal-change-detection/signal-change-detection-parent.component').then(m => m.ParentComponent),
     pathMatch: 'full'
   },
+
+  // --- PRIMITIVAS DE SEÑALES (Core Signals) ---
   {
     path: 'counter-signal',
     loadComponent: () => import('./01-counter-signal/01-counter-signal.component').then(m => m.SignalsComponent),
@@ -46,6 +53,8 @@ export const routes: Routes = [
     loadComponent: () => import('./04-linked-signal/04-linked-signal.component').then(m => m.LinkedSignalComponent),
     pathMatch: 'full'
   },
+
+  // --- ENTRADAS / SALIDAS (Input / Output) ---
   {
     path: 'io-decorator',
     loadComponent: () => import('./05-input-output-signal/05-io-decorator.component').then(m => m.ParentDecoratorComponent),
@@ -56,6 +65,8 @@ export const routes: Routes = [
     loadComponent: () => import('./05-input-output-signal/05-io-signal.component').then(m => m.ParentSignalsComponent),
     pathMatch: 'full'
   },
+
+  // --- CONSULTAS (Queries) ---
   {
     path: 'queries-decorator',
     loadComponent: () => import('./07-queries-signal/07-queries-decorator.component').then(m => m.QueriesDecoratorComponent),
@@ -66,6 +77,8 @@ export const routes: Routes = [
     loadComponent: () => import('./07-queries-signal/07-queries-signal.component').then(m => m.QueriesSignalsComponent),
     pathMatch: 'full'
   },
+
+  // --- ENLACE BIDIRECCIONAL (Two-way Data Binding) ---
   {
     path: 'ng-model',
     loadComponent: () => import('./06-double-data-binding/06-ng-model.component').then(m => m.ClassicTwoWayComponent),
@@ -78,6 +91,8 @@ export const routes: Routes = [
     path: 'model-io-signal',
     loadComponent: () => import('./06-double-data-binding/06-model-io-signal.component').then(m => m.ModelIOSignalComponent),
   },
+
+  // --- ENRUTAMIENTO (Routing) ---
   {
     path: 'router-without-signal/user/:id',
     loadComponent: () => import('./08-router/08-router-without-signal.component').then(m => m.UserClassicComponent),
@@ -86,6 +101,8 @@ export const routes: Routes = [
     path: 'router-signal/user/:id',
     loadComponent: () => import('./08-router/08-router-signal.component').then(m => m.UserSignalsComponent),
   },
+
+  // --- ASINCRONÍA Y RECURSOS (Async & Resources) ---
   {
     path: 'async-http-client',
     loadComponent: () => import('./09-async/09-async-http-client.component').then(m => m.ClassicTodosComponent),
@@ -98,6 +115,8 @@ export const routes: Routes = [
     path: 'async-resource',
     loadComponent: () => import('./09-async/09-async-resource.component').then(m => m.ResourceTodosComponent),
   },
+
+  // --- INTEROPERABILIDAD CON RXJS ---
   {
     path: 'rxjs-interop-to-signal',
     loadComponent: () => import('./10-rxjs-interop/10-rxjs-interop-to-signal.component').then(m => m.TickerSignalsComponent),
@@ -119,6 +138,7 @@ export const routes: Routes = [
     loadComponent: () => import('./10-rxjs-interop/10-rxjs-interop-output.component').then(m => m.TickDemoComponent),
   },
 
+  // --- FORMULARIOS BASADOS EN SEÑALES (Signal Forms) ---
   {
     path: 'signal-forms-basic',
     loadComponent: () => import('./11-forms/11-signal-form-basic.component').then(m => m.SignalFormBasicComponent),
@@ -143,7 +163,4 @@ export const routes: Routes = [
     path: 'signal-forms-custom-async-validation-http',
     loadComponent: () => import('./11-forms/11-signal-form-custom-async-validation-http.component').then(m => m.SignalFormCustomAsyncValidationHttpComponent),
   }
-
-
-
 ];

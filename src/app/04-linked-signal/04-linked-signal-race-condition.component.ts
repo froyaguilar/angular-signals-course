@@ -1,47 +1,57 @@
-import { ChangeDetectionStrategy, Component, Signal, WritableSignal, computed, effect, signal } from '@angular/core';
-
+import { ChangeDetectionStrategy, Component, computed, signal } from '@angular/core';
 import { JsonPipe } from '@angular/common';
 
 @Component({
-  selector: 'dottech-linked-signal-race-condition',
+  selector: 'app-linked-signal-race-condition',
+  standalone: true,
   imports: [JsonPipe],
-  changeDetection: ChangeDetectionStrategy.OnPush,
   template: `
-   <h1>point = {{ point() | json }}</h1>
+   <h1>Punto = {{ point() | json }}</h1>
     <button (click)="moveConcurrently(1, 1)">
-      Move Concurrently (+1, +1) Twice
+      Mover Concurrentemente (+1, +1) dos veces
     </button>
-  `
+    <p>⚠️ Este componente demuestra una CONDICIÓN DE CARRERA. 
+       Las actualizaciones de X e Y están descoordinadas.</p>
+  `,
+  changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class LinkedSignalRaceComponent {
-  // Two independent writable signals
+  /**
+   * Dos signals de escritura independientes.
+   */
   readonly x = signal(0);
   readonly y = signal(0);
 
-  // Computed signal combines x and y into a point object
+  /**
+   * Un signal computado que combina X e Y.
+   * El problema: si intentamos actualizar X e Y de forma asíncrona, 
+   * podemos obtener estados intermedios inconsistentes.
+   */
   readonly point = computed(() => ({ x: this.x(), y: this.y() }));
 
-
-  // Simulates two concurrent movements (+1,+1) where each one updates x and y separately.
+  /**
+   * Simula movimientos concurrentes. Al usar setTimeout independientes,
+   * el orden de ejecución es impredecible y los valores se sobrescriben mal.
+   */
   moveConcurrently(dx: number, dy: number) {
     this.move(dx, dy);
     this.move(dx, dy);
   }
 
   private move(dx: number, dy: number) {
-    // 1) capture the current values
+    // Capturamos los valores actuales
     const curX = this.x();
     const curY = this.y();
 
-    // 2) schedule the two writes at random future times
+    // Programamos dos escrituras separadas en tiempos aleatorios
     setTimeout(() => {
-      console.log('Setting x to', curX + dx);
+      console.log('Estableciendo X a', curX + dx);
       this.x.set(curX + dx);
-    }, Math.random() * 1000);
+    }, Math.random() * 500);
 
     setTimeout(() => {
-      console.log('Setting y to', curY + dy);
+      console.log('Estableciendo Y a', curY + dy);
       this.y.set(curY + dy);
-    }, Math.random() * 1000);
+    }, Math.random() * 500);
   }
 }

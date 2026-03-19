@@ -1,4 +1,3 @@
-// user-signals.component.ts
 import {
   ChangeDetectionStrategy,
   Component,
@@ -11,21 +10,30 @@ import { Router } from '@angular/router';
 
 @Component({
   selector: 'app-user-signals',
+  standalone: true,
   template: `
-    <h2>Signals Router</h2>
-    <p>User ID = {{ id() }}</p>
-    <button (click)="goNext()">Go to next</button>`,
+    <h2>Router con Signals</h2>
+    <p>ID de Usuario = {{ id() }}</p>
+    <button (click)="goNext()">Ir al siguiente</button>
+  `,
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class UserSignalsComponent {
-  // ✅ Route parameter "id" bound as a signal
+  /**
+   * ✅ Parámetro de ruta 'id' vinculado como un signal.
+   * Requiere 'withComponentInputBinding()' en la configuración del router.
+   * Usamos transform: numberAttribute para asegurar que sea un número.
+   */
   readonly id = input(0, { transform: numberAttribute });
 
   private router = inject(Router);
 
   goNext() {
-    this.router.navigateByUrl(`/router-signal/user/${+(this.id() ?? 0) + 1}`);
-
+    /**
+     * Navegamos al siguiente ID. El input signal 'id' se actualizará automáticamente.
+     */
+    const nextId = (this.id() ?? 0) + 1;
+    this.router.navigateByUrl(`/router-signal/user/${nextId}`);
   }
 }
 

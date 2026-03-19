@@ -7,22 +7,32 @@ import {
 } from '@angular/core';
 
 @Component({
-  selector: 'app-with-signals',
+  selector: 'app-queries-signals',
+  standalone: true,
   changeDetection: ChangeDetectionStrategy.OnPush,
   template: `
-    <input #inputRef type="text" placeholder="Type something…" (input)="onInput($event)" />
-    <p>Value = {{ value() }}</p>
+    <h2>Consultas con Signals (Forma moderna)</h2>
+    <input #inputRef type="text" placeholder="Escribe algo…" (input)="onInput($event)" />
+    <p>Valor = {{ value() }}</p>
   `
 })
 export class QueriesSignalsComponent {
-  // ✅ viewChild returns a Signal<ElementRef|null>
-  readonly inputRef = viewChild('inputRef', { read: ElementRef });
+  /**
+   * ✅ viewChild(): Versión basada en signals de @ViewChild.
+   * Devuelve un Signal que contiene la referencia (o undefined si no existe).
+   * No requiere AfterViewInit para ser "seguro" de leer (aunque será undefined antes).
+   */
+  readonly inputRef = viewChild<ElementRef<HTMLInputElement>>('inputRef');
 
-  // ✅ signal to hold the current input value
+  /**
+   * ✅ signal para almacenar el valor actual.
+   */
   readonly value = signal('');
 
   onInput(event: Event): void {
-    // ✅ Automatically updates when input changes
+    /**
+     * ✅ Obtenemos el valor del signal de la referencia.
+     */
     const inputElement = this.inputRef();
     if (inputElement) {
       this.value.set(inputElement.nativeElement.value);

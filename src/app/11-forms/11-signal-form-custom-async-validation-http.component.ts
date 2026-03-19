@@ -1,38 +1,37 @@
-import { Component, signal } from "@angular/core";
-import { Field, customError, form, maxLength, pattern, validateHttp } from '@angular/forms/signals';
-import { minLength, required } from '@angular/forms/signals';
-
+import { Component, signal, ChangeDetectionStrategy } from "@angular/core";
+import { Field, customError, form, maxLength, pattern, validateHttp, minLength, required } from '@angular/forms/signals';
 import { JsonPipe } from "@angular/common";
 
 @Component({
-  selector: 'signal-form',
+  selector: 'app-signal-form-custom-async-validation-http',
+  standalone: true,
   imports: [JsonPipe, Field],
+  changeDetection: ChangeDetectionStrategy.OnPush,
   template: `
-    <input [field]="form.username" id="user-id" placeholder="username"/>
-    <input [field]="form.email" id="user-username" placeholder="email"/>
-    <button (click)="save()" [disabled]="form().invalid()">SUBMIT</button>
+    <h2>Validaciones HTTP (validateHttp)</h2>
+
+    <div>
+      <input [field]="form().username" id="user-id" placeholder="Nombre de usuario"/>
+      
+      @if (form().username.pending()) {
+         <small style="color: blue;">🔍 Comprobando disponibilidad en servidor...</small>
+      }
+
+      @if (form().username.invalid() && form().username.touched()) {
+        <div style="color: red;">
+          @for (error of form().username.errors(); track $index) {
+            <small>{{ error.message }}</small><br>
+          }
+        </div>
+      }
+    </div>
+
+    <button (click)="save()" [disabled]="form().invalid() || form().pending()">Enviar</button>
 
     <hr>
-    @if (form.username().pending()) {
-       <small>Comprobando disponibilidad de {{ form.username().value() }}...</small>
-    }
-
-    <pre>Form Value: {{form().value() | json}}</pre>
-    <button (click)="resetForm()">Reset Form</button>
-
-    <!-- Field level errors -->
-     @if(form().invalid()){
-      <h2> Errors </h2>
-      <pre style="color:red">username: {{ form.username().errors() | json }}</pre>
-      <pre style="color:red">email: {{ form.email().errors() | json }}</pre>
-
-      <h2> username Errors individual messages </h2>
-      @let usernameErrors = form.username().errors();
-
-      @for (error of usernameErrors; track $index) {
-        <li>{{error.message}}</li>
-      }
-     }`
+    <h3>Respuesta del Servidor:</h3>
+    <pre>{{ form().username.errors() | json }}</pre>
+  `
 })
 export class SignalFormCustomAsyncValidationHttpComponent {
   user = signal({
@@ -41,29 +40,39 @@ export class SignalFormCustomAsyncValidationHttpComponent {
   });
 
   form = form(this.user, path => {
-    required(path.username, { message: 'username is required' });
-    minLength(path.username, 3, { message: 'username must be at least 3 characters long' });
-    maxLength(path.username, 10, { message: 'username must be at most 10 characters long' });
-    required(path.email);
-    pattern(path.email, /^[a-z0-9._%+-]+@[a-z0-9.-]+\.[a-z]{2,4}$/);
+    required(path.username, { message: 'Obligatorio' });
 
-    validateHttp(path.username, { // use Bret
-      request: ({ value }) =>  value() ? `https://jsonplaceholder.typicode.com/users?username=${value()}` : undefined,
+    /**
+     * ✅ validateHttp(): Especializado en validaciones que requieren una petición HTTP GET.
+     * Simplifica el uso de validateAsync cuando solo necesitamos consultar un endpoint.
+     */
+    validateHttp(path.username, {
+      /**
+       * Define la URL de la petición. Si devuelve undefined, la petición no se realiza.
+       */
+      request: ({ value }) => value() 
+        ? `https://jsonplaceholder.typicode.com/users?username=${value()}` 
+        : undefined,
+      
+      /**
+       * Procesa la respuesta exitosa para determinar si hay errores de validación.
+       */
       onSuccess: (result: any[]) => result && result.length
-          ? [customError({ kind: 'usernameNotAvailable', message: 'Username already taken' })]
+          ? [customError({ kind: 'usuarioNoDisponible', message: 'Este nombre de usuario ya está en uso' })]
           : [],
-      onError: (res: any) =>res && res.length
-          ? [customError({ kind: 'NetworkError', message: 'Network Error' })]
-          : [],
+      
+      /**
+       * Procesa errores de red.
+       */
+      onError: () => [customError({ kind: 'errorRed', message: 'Error de conexión con el servidor' })],
     });
   });
 
   save(): void {
-    console.log('Form submitted', this.form().value());
+    console.log('Enviando:', this.form().value());
   }
 
   resetForm(){
     this.form().reset();
   }
-
 }

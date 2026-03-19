@@ -2,18 +2,28 @@ import { Component } from "@angular/core";
 import { DefaultChangeDetectionComponent } from "./default-change-detection-child.component";
 
 @Component({
-  selector: 'app-parent',
+  selector: 'app-parent-direct',
+  standalone: true,
   imports: [DefaultChangeDetectionComponent],
   template: `
-    <button (click)="mutateUser()">Mutate user.name</button>
+    <!-- La mutación de un objeto no cambia su referencia, pero con CD Default no importa -->
+    <button (click)="mutateUser()">Mutar user.name</button>
     <app-child [user]="user"></app-child>
   `
 })
-export class ParentComponent {
+export class ParentDirectComponent {
+  /**
+   * Objeto plano.
+   */
   user = { name: 'Carlos' };
 
+  /**
+   * Modificamos una propiedad interna del objeto.
+   * La referencia del objeto 'user' sigue siendo la misma.
+   * En la estrategia Default, el componente hijo detectará el cambio y se actualizará.
+   */
   mutateUser() {
-    this.user.name = 'Updated Carlos';
-    console.log('Mutated user.name');
+    this.user.name = 'Carlos Actualizado';
+    console.log('Mutación de user.name realizada');
   }
 }

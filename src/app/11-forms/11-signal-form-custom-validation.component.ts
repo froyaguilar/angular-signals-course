@@ -1,78 +1,77 @@
-import { Component, signal } from "@angular/core";
-import { Field, customError, form, maxLength, pattern, validate } from '@angular/forms/signals';
-import {
-  minLength,
-  required,
-} from '@angular/forms/signals';
-
+import { Component, signal, ChangeDetectionStrategy } from "@angular/core";
+import { Field, customError, form, maxLength, pattern, validate, minLength, required } from '@angular/forms/signals';
 import { JsonPipe } from "@angular/common";
 
 @Component({
-  selector: 'signal-form',
+  selector: 'app-signal-form-custom-validation',
+  standalone: true,
   imports: [JsonPipe, Field],
+  changeDetection: ChangeDetectionStrategy.OnPush,
   template: `
+    <h2>Validaciones Personalizadas (Custom)</h2>
 
-    <input [field]="form.username" id="user-id" placeholder="username"/>
-    <input [field]="form.email" id="user-username" placeholder="email"/>
-    <button (click)="save()" [disabled]="form().invalid()">SUBMIT</button>
-
-
-    <pre>Form Value: {{form().value() | json}}</pre>
-
-
-    <button (click)="resetForm()">Reset Form</button>
-
-
-    <!-- Field level errors -->
-     @if(form().invalid()){
-      <h2> Errors </h2>
-      <pre style="color:red">username: {{ form.username().errors() | json }}</pre>
-      <pre style="color:red">email: {{ form.email().errors() | json }}</pre>
-
-      <h2> username Errors individual messages </h2>
-      @let usernameErrors = form.username().errors();
-
-      @for (error of usernameErrors; track $index) {
-        <li>{{error.message}}</li>
+    <div>
+      <input [field]="form().username" id="user-id" placeholder="Usuario"/>
+      @if (form().username.invalid() && form().username.touched()) {
+        <div style="color: red;">
+          @for (error of form().username.errors(); track $index) {
+            <small>{{ error.message }}</small><br>
+          }
+        </div>
       }
+    </div>
 
-     }
+    <div>
+      <input [field]="form().email" id="user-username" placeholder="Email"/>
+    </div>
+
+    <button (click)="save()" [disabled]="form().invalid()">Enviar</button>
+    <button (click)="resetForm()">Reiniciar</button>
+
+    <hr>
+    <h3>Errores Actuales:</h3>
+    <pre>{{ form().errors() | json }}</pre>
   `
 })
 export class SignalFormCustomValidationComponent {
-
   user = signal({
     username: '',
     email: '',
   });
 
   form = form(this.user, path => {
-    required(path.username, { message: 'username is required' });
-    minLength(path.username, 3, { message: 'username must be at least 3 characters long' });
-    maxLength(path.username, 10, { message: 'username must be at most 10 characters long' });
+    required(path.username, { message: 'Requerido' });
+    minLength(path.username, 3, { message: 'Mínimo 3' });
+    
     required(path.email);
     pattern(path.email, /^[a-z0-9._%+-]+@[a-z0-9.-]+\.[a-z]{2,4}$/);
 
-    validate(path.username, (childField) => {
-      const reservedusernames = ['admin', 'administrator', 'root'];
+    /**
+     * ✅ validate(): Permite añadir lógica de validación personalizada sincrónica.
+     * Recibe el campo y debe devolver un objeto de error o null.
+     */
+    validate(path.username, (field) => {
+      const nombresProhibidos = ['admin', 'root', 'superusuario'];
 
-      if (!reservedusernames.includes(childField.value())) {
+      if (!nombresProhibidos.includes(field.value().toLowerCase())) {
         return null;
       }
+
+      /**
+       * ✅ customError(): Utilidad para generar un objeto de error estandarizado.
+       */
       return customError({
-        kind: 'usernamesForbidden',
-        message: 'username cannot be a reserved username',
+        kind: 'nombreProhibido',
+        message: 'Este nombre de usuario está reservado y no se puede usar',
       });
     });
-
   });
 
   save(): void {
-    console.log('Form submitted', this.form().value());
+    console.log('Formulario enviado:', this.form().value());
   }
 
   resetForm(){
     this.form().reset();
   }
-
 }
