@@ -1,12 +1,12 @@
-# 🚦 Angular Router: Classic vs Signals Approach
+# 🚦 Angular Router: Enfoque Clásico vs Signals
 
-Angular 17+ introduces **signal-based route inputs**, making routing more reactive, concise, and friendly to `ChangeDetectionStrategy.OnPush`.
+Angular 17+ introduce las **entradas de ruta basadas en signals**, haciendo que el enrutamiento sea más reactivo, conciso y amigable con `ChangeDetectionStrategy.OnPush`.
 
-This guide compares **classic `ActivatedRoute` routing** with the **new signals-based input binding** using `@input()`.
+Esta guía compara el **enrutamiento clásico con `ActivatedRoute`** con la **nueva vinculación de entrada basada en signals** utilizando `input()`.
 
 ---
 
-## 🧭 Classic Angular Router with `ActivatedRoute`
+## 🧭 Router de Angular Clásico con `ActivatedRoute`
 
 ```ts
 import { ActivatedRoute, Router } from '@angular/router';
@@ -23,9 +23,9 @@ import { Subscription } from 'rxjs';
 @Component({
   selector: 'app-user-classic',
   template: `
-    <h2>Classic Router</h2>
-    <p>User ID = {{ userId }}</p>
-    <button (click)="goNext()">Go to next user</button>
+    <h2>Router Clásico</h2>
+    <p>ID de Usuario = {{ userId }}</p>
+    <button (click)="goNext()">Ir al siguiente usuario</button>
   `,
   changeDetection: ChangeDetectionStrategy.OnPush
 })
@@ -39,7 +39,7 @@ export class UserClassicComponent implements OnInit, OnDestroy {
   ngOnInit() {
     this.subs.add(this.route.paramMap.subscribe(pm => {
       this.userId = +pm.get('id')!;
-      this.cdr.markForCheck(); // 🛠️ Manual signal for re-render
+      this.cdr.markForCheck(); // 🛠️ Notificación manual para renderizar
     }));
   }
 
@@ -54,14 +54,14 @@ export class UserClassicComponent implements OnInit, OnDestroy {
 }
 ```
 
-**⚠️ Drawbacks:**
-- Requires subscription management (boilerplate)
-- Manual `markForCheck()` for UI updates with OnPush
-- More imperative, less reactive
+**⚠️ Inconvenientes:**
+- Requiere gestión de suscripciones (código repetitivo).
+- Se necesita `markForCheck()` manual para actualizar la interfaz con OnPush.
+- Más imperativo, menos reactivo.
 
 ---
 
-## ✅ Signal-based Routing with `input()`
+## ✅ Enrutamiento basado en Signals con `input()`
 
 ```ts
 import {
@@ -76,14 +76,14 @@ import { Router } from '@angular/router';
 @Component({
   selector: 'app-user-signals',
   template: `
-    <h2>Signals Router</h2>
-    <p>User ID = {{ id() }}</p>
-    <button (click)="goNext()">Go to next</button>
+    <h2>Router con Signals</h2>
+    <p>ID de Usuario = {{ id() }}</p>
+    <button (click)="goNext()">Ir al siguiente</button>
   `,
   changeDetection: ChangeDetectionStrategy.OnPush
 })
 export class UserSignalsComponent {
-  // ✅ Automatically maps route param `id` as a signal
+  // ✅ Mapea automáticamente el parámetro de ruta `id` como un signal
   readonly id = input(0, { transform: numberAttribute });
 
   private router = inject(Router);
@@ -94,65 +94,60 @@ export class UserSignalsComponent {
 }
 ```
 
-## ⚙️ Configuring Signal-based Router
+## ⚙️ Configuración del Router basado en Signals
 
-To enable signal-based route inputs, update your route configuration to use the `input` property for parameters:
+Este fragmento muestra cómo mapear parámetros a entradas del componente:
 
 ```ts
-import { Routes } from '@angular/router';
-import { UserSignalsComponent } from './user-signals.component';
-
+// app.routes.ts
 export const routes: Routes = [
   {
     path: 'router-signal/user/:id',
     component: UserSignalsComponent,
-    // 👇 Enable signal-based input binding for route params
-    input: {
-      id: 'id' // Maps route param 'id' to component input
-    }
+    // La configuración global 'withComponentInputBinding' suele ser suficiente
   }
 ];
 ```
 
-**Note:**  
-- The `input` property maps route parameters to component inputs using signals.
-- No additional setup is needed in the component—just use `input()` as shown above.
-- This feature requires Angular 17+.
-## 🛠️ Configuring with `withInputComponentBinding` in `config.ts`
+## 🛠️ Configuración con `withComponentInputBinding` en `app.config.ts`
 
-If you prefer a global configuration, Angular Router provides the `withInputComponentBinding` feature. This enables signal-based input binding for all routes by default.
+Para habilitar esto globalmente, Angular Router proporciona `withComponentInputBinding`. Esto vincula los parámetros de ruta a los `input()` de los componentes por defecto.
 
-Update your router configuration in `config.ts`:
+Actualiza tu configuración de router:
 
 ```ts
-import { provideRouter, withInputComponentBinding } from '@angular/router';
+import { provideRouter, withComponentInputBinding } from '@angular/router';
 import { routes } from './app.routes';
 
-export const routerProviders = [
-  provideRouter(routes, withInputComponentBinding())
-];
+export const appConfig = {
+  providers: [
+    provideRouter(routes, withComponentInputBinding())
+  ]
+};
 ```
 
-**How it works:**
-- All route parameters are automatically mapped to component inputs using signals.
-- No need to specify the `input` property for each route.
-- Components just use `input()` for reactive route params.
+**Cómo funciona:**
+- Todos los parámetros de ruta se mapean automáticamente a las entradas (`input`) de los componentes usando signals.
+- No es necesario especificar la propiedad `input` para cada ruta individualmente.
+- Los componentes simplemente usan `input()` para parámetros de ruta reactivos.
 
-**Tip:**  
-You can still override or customize input bindings per route if needed.
-**💡 Advantages:**
-- No manual subscription logic needed
-- `id()` is a reactive signal — works seamlessly with OnPush
-- Automatically updates when the route param changes
-- Supports transformations (e.g., `numberAttribute`) out of the box
+**Tip:**
+Aún puedes sobrescribir o personalizar las vinculaciones de entrada por ruta si es necesario.
+
+**💡 Ventajas:**
+- No se necesita lógica de suscripción manual.
+- `id()` es un signal reactivo — funciona perfectamente con OnPush.
+- Se actualiza automáticamente cuando cambia el parámetro de ruta.
+- Soporta transformaciones (ej. `numberAttribute`) de forma nativa.
 
 ---
 
-## 📌 Summary: Routing Patterns
+## 📌 Resumen: Patrones de Enrutamiento
 
-| Feature                    | Classic Router           | Signals-based Router      |
-|----------------------------|-------------------------|--------------------------|
-| Reactive route param       | ❌ Manual subscription   | ✅ Signal via `@input()`  |
-| Auto UI update with OnPush | ❌ Needs `markForCheck`  | ✅ Works naturally        |
-| Type coercion / transform  | ❌ Manual                | ✅ With `{ transform }`   |
-| Boilerplate                | High                    | Low                      |
+| Característica               | Router Clásico           | Router basado en Signals |
+|------------------------------|--------------------------|--------------------------|
+| Parámetro de ruta reactivo   | ❌ Suscripción manual    | ✅ Signal mediante `input()`|
+| Actualización auto con OnPush| ❌ Necesita `markForCheck`| ✅ Funciona de forma natural|
+| Transformación de tipos      | ❌ Manual                | ✅ Con `{ transform }`   |
+| Código extra (Boilerplate)   | Alto                     | Bajo                     |
+ High                    | Low                      |

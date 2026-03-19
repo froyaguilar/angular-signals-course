@@ -1,79 +1,79 @@
-# Signal Forms: Advanced Async Validation with `validateAsync`
+# Signal Forms: Validación Asíncrona Avanzada con `validateAsync`
 
-> **⚠️ EXPERIMENTAL API WARNING**
+> **⚠️ ADVERTENCIA: API EXPERIMENTAL**
 >
-> The Signal Forms API (`@angular/forms/signals`) is **experimental** as of Angular 21 (RC.0). The API is unstable and **should not be used in production**.
+> La API de Signal Forms (`@angular/forms/signals`) es **experimental** a partir de Angular 21.2.5. La API es inestable y **no debe usarse en producción**.
 
-## What is `validateAsync`?
+## ¿Qué es `validateAsync`?
 
-While `validateHttp` is a simple helper for `GET` requests, **`validateAsync`** is the powerful, low-level tool for handling *any* custom asynchronous validation logic.
+Mientras que `validateHttp` es un ayudante sencillo para peticiones `GET`, **`validateAsync`** es la herramienta potente y de bajo nivel para manejar *cualquier* lógica de validación asíncrona personalizada.
 
-Its primary purpose is to **separate resource loading from validation logic**:
-* **Resource Loading:** Fetching data that the validator *depends on* (e.g., a list of banned words, user settings from a database).
-* **Validation Logic:** The actual check (e.g., "is the current value in this banned list?").
+Su propósito principal es **separar la carga de recursos de la lógica de validación**:
+* **Carga de Recursos:** Obtención de datos de los que *depende* el validador (por ejemplo, una lista de palabras prohibidas o la configuración del usuario desde una base de datos).
+* **Lógica de Validación:** La comprobación real (por ejemplo, "¿está el valor actual en esta lista prohibida?").
 
-This separation is highly efficient. The `factory` (loader) only re-runs when its dependencies change, while the `onSuccess` (validator) can re-run instantly on every keystroke using the *cached* resource.
+Esta separación es muy eficiente. El `factory` (cargador) solo se vuelve a ejecutar cuando cambian sus dependencias, mientras que el `onSuccess` (validador) puede ejecutarse instantáneamente con cada pulsación de tecla utilizando el recurso *en caché*.
 
-Like other async validators, it also automatically manages the control's **`pending`** state (`Signal<boolean>`), which is `true` while the `factory` is fetching the resource.
+Al igual que otros validadores asíncronos, también gestiona automáticamente el estado **`pending`** (pendiente) del control (`Signal<boolean>`), que es `true` mientras el `factory` está obteniendo el recurso.
 
 ---
 
-## The `validateAsync` Object Explained
+## Explicación del Objeto `validateAsync`
 
-`validateAsync` is configured with an object that defines a clear, step-by-step flow:
+`validateAsync` se configura con un objeto que define un flujo claro paso a paso:
 
 1.  **`params: (ctx) => TParams | undefined`**
-    * **The Trigger.** This function runs **every time the control's value changes**.
-    * It receives the control context (`ctx`), which includes `ctx.value()`.
-    * Its job is to return an object of parameters that the `factory` will need. If it returns `undefined`, the validator stops and does not run.
+    * **El Activador.** Esta función se ejecuta **cada vez que cambia el valor del control**.
+    * Recibe el contexto del control (`ctx`), que incluye `ctx.value()`.
+    * Su trabajo es devolver un objeto de parámetros que el `factory` necesitará. Si devuelve `undefined`, el validador se detiene y no se ejecuta.
 
 2.  **`factory: (params$) => ResourceRef<TResult>`**
-    * **The Loader.** This function runs **only when the `params` object (from step 1) changes**.
-    * It receives the `params` as a signal (`params$`).
-    * Its job is to fetch the asynchronous resource (e.g., make a `Promise` or `Observable` call).
-    * It **must** return a `ResourceRef`, which you create using the `resource()` helper function.
+    * **El Cargador.** Esta función se ejecuta **solo cuando cambia el objeto `params` (del paso 1)**.
+    * Recibe los `params` como un signal (`params$`).
+    * Su trabajo es obtener el recurso asíncrono (por ejemplo, realizar una llamada que devuelva una `Promise` u `Observable`).
+    * **Debe** devolver un `ResourceRef`, que se crea utilizando la función de ayuda `resource()`.
 
 3.  **`resource(options)`**
-    * This is a helper function (imported from `@angular/core`) that `factory` uses to wrap the async call.
-    * You pass it an options object, most commonly:
-        * `params`: The params signal from the `factory` (e.g., `params$()`).
-        * `loader`: A function that receives the resolved params and returns the `Promise` or `Observable` (e.g., `({ params }) => this.getBannedListApi(params.category)`).
+    * Esta es una función de ayuda (importada de `@angular/core`) que el `factory` utiliza para envolver la llamada asíncrona.
+    * Le pasas un objeto de opciones, comúnmente:
+        * `params`: El signal de parámetros del `factory` (por ejemplo, `params$()`).
+        * `loader`: Una función que recibe los parámetros resueltos y devuelve la `Promise` u `Observable` (por ejemplo, `({ params }) => this.getBannedListApi(params.category)`).
 
 4.  **`onSuccess: (resource: TResult, ctx) => ValidationErrors | null`**
-    * **The Validation Logic.** This function runs **after** the `factory`'s promise resolves successfully.
-    * It receives the `resource` (the data loaded, e.g., the banned list) and the `ctx` (the control context).
-    * It *also* runs (synchronously) every time the control's value changes *after* the resource has been loaded, using the cached resource.
-    * This is where you compare `ctx.value()` against the `resource` and return `null` (if valid) or a `customError` (if invalid).
+    * **La Lógica de Validación.** Esta función se ejecuta **después** de que la promesa del `factory` se resuelva con éxito.
+    * Recibe el `resource` (los datos cargados, por ejemplo, la lista prohibida) y el `ctx` (el contexto del control).
+    * *También* se ejecuta (síncronamente) cada vez que cambia el valor del control *después* de que se haya cargado el recurso, utilizando el recurso en caché.
+    * Aquí es donde comparas `ctx.value()` con el `resource` y devuelves `null` (si es válido) o un `customError` (si es inválido).
 
 5.  **`onError: (error) => ValidationErrors`**
-    * **The Error Handler.** This runs *only* if the `factory`'s `loader` (the `Promise` or `Observable`) fails (e.g., it's rejected, or an HTTP 500 occurs).
-    * It must return a `customError` to place the control in an error state.
+    * **El Manejador de Errores.** Esto se ejecuta *solo* si el `loader` del `factory` (la `Promise` u `Observable`) falla (por ejemplo, si es rechazada o ocurre un error HTTP 500).
+    * Debe devolver un `customError` para poner el control en un estado de error.
 
 ---
 
-## Code Example Explanation
+## Explicación del Ejemplo de Código
 
-The component in this directory (`signal-form-custom-async-validation.component.ts`) demonstrates this flow perfectly.
+El componente en este directorio (`signal-form-custom-async-validation.component.ts`) demuestra perfectamente este flujo.
 
-* The **`params`** function is smart: it runs on every keystroke to check `ctx.value().length` and dynamically returns a `category` (`'short'` or `'long'`).
-* The **`factory`** only runs when this `category` *changes* (e.g., when the input length crosses 5 characters). It uses `resource` and its `loader` to call `getBannedListApi`.
-* The **`onSuccess`** function receives the `bannedList` (the `string[]` returned from the `factory`) and performs the actual validation logic (`bannedList.includes(ctx.value())`) instantly on every keystroke, using the cached list.
+* La función **`params`** es inteligente: se ejecuta con cada pulsación de tecla para comprobar `ctx.value().length` y devuelve dinámicamente una `category` (`'short'` o `'long'`).
+* El **`factory`** solo se ejecuta cuando esta `category` *cambia* (por ejemplo, cuando la longitud de la entrada cruza los 5 caracteres). Utiliza `resource` y su `loader` para llamar a `getBannedListApi`.
+* La función **`onSuccess`** recibe la `bannedList` (la `string[]` devuelta por el `factory`) y realiza la lógica de validación real (`bannedList.includes(ctx.value())`) instantáneamente en cada pulsación de tecla, utilizando la lista en caché.
 
-### Template Usage
+### Uso en la Plantilla
 
-The template (`signal-form.component.html`) shows how to use the states provided by the validator.
+La plantilla (`signal-form.component.html`) muestra cómo usar los estados proporcionados por el validador.
 
-* **Binding:** The `[field]` binding must access the control via the `form()` signal:
+* **Vinculación:** La vinculación `[field]` debe acceder al control a través del signal `form()`:
     ```html
-    <input [field]="form().username" placeholder="username"/>
+    <input [field]="form().username" placeholder="nombre de usuario"/>
     ```
-* **Pending State:** The `pending()` signal is used to show a loading message:
+* **Estado Pendiente:** El signal `pending()` se utiliza para mostrar un mensaje de carga:
     ```html
     @if (form().username().pending()) {
       <small>Comprobando disponibilidad de {{ form().username().value() }}...</small>
     }
     ```
-* **Error Display:** The `errors()` signal will contain the `customError` returned from `onSuccess` or `onError`, which is then displayed in the `@for` loop.
+* **Visualización de Errores:** El signal `errors()` contendrá el `customError` devuelto desde `onSuccess` o `onError`, que luego se muestra en el bucle `@for`.
     ```html
     @let usernameErrors = form().username().errors();
 

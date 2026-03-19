@@ -1,22 +1,22 @@
-# Counter with Writable and Readonly Signals
+# Contador con Signals de Escritura y Solo Lectura
 
-This example demonstrates how to use writable and readonly signals in Angular to manage state and trigger change detection.
+Este ejemplo demuestra cómo utilizar signals de escritura (writable) y de solo lectura (readonly) en Angular para gestionar el estado y disparar la detección de cambios.
 
-## Key Features
+## Características Clave
 
-- `WritableSignal`: A signal that can be updated directly.
-- `ReadonlySignal`: A signal that provides read-only access to the state.
+- `WritableSignal`: Una señal que se puede actualizar directamente.
+- `ReadonlySignal`: Una señal que proporciona acceso de solo lectura al estado.
 
-## How It Works
+## Cómo Funciona
 
-- The `count1` signal is writable and can be updated using the `update` method.
-- The `count2` signal is a readonly version of `count1`, ensuring immutability for consumers.
+- La señal `count1` es de escritura y se puede actualizar utilizando el método `update`.
+- La señal `count2` es una versión de solo lectura de `count1`, garantizando la inmutabilidad para los consumidores.
 
-## Code Highlights
+## Puntos Destacados del Código
 
-- Increment the counter using the `increment` method.
-- Observe how signals automatically trigger change detection.
+- Incrementa el contador utilizando el método `increment`.
+- Observa cómo los signals disparan automáticamente la detección de cambios.
 
-## Path
+## Ruta
 
 `src/app/01-counter-signal`

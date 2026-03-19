@@ -1,34 +1,34 @@
-# Angular Async Data Fetching: Classic vs Signals APIs
+# Obtención de Datos Asíncronos en Angular: APIs Clásicas vs Signals
 
-## 📦 Classic HTTP API with HttpClient
+## 📦 API HTTP Clásica con HttpClient
 
-**What is it?**  
-The `HttpClient` API from `@angular/common/http` is the traditional way to perform HTTP requests in Angular, based on RxJS and Observables.
+**¿Qué es?**
+La API `HttpClient` de `@angular/common/http` es la forma tradicional de realizar peticiones HTTP en Angular, basada en RxJS y Observables.
 
-### ✅ Advantages
-- Full control over request/response handling
-- Works well with RxJS operators
-- Highly flexible and battle-tested
+### ✅ Ventajas
+- Control total sobre el manejo de peticiones/respuestas.
+- Funciona bien con los operadores de RxJS.
+- Altamente flexible y probada en batalla.
 
-### ❌ Disadvantages
-- Verbose boilerplate (subscriptions, cleanup)
-- Manual change detection triggering needed (`markForCheck()`)
-- No automatic cancellation or state tracking
+### ❌ Desventajas
+- Código repetitivo (suscripciones, limpieza).
+- Se requiere activar manualmente la detección de cambios (`markForCheck()`).
+- No hay cancelación automática ni seguimiento del estado de forma nativa.
 
-### 🧠 Core Concepts
-- You must `subscribe()` to start the HTTP request
-- Manually update component state on success/error
-- OnPush components require `ChangeDetectorRef` to detect changes
+### 🧠 Conceptos Clave
+- Debes usar `subscribe()` para iniciar la petición HTTP.
+- Actualizar manualmente el estado del componente en caso de éxito/error.
+- Los componentes OnPush requieren `ChangeDetectorRef` para detectar los cambios.
 
-### 🧪 Example
+### 🧪 Ejemplo
 
 ```typescript
 @Component({
   selector: 'app-classic-todos',
   changeDetection: ChangeDetectionStrategy.OnPush,
   template: `
-    <h2>Classic Todos Fetch</h2>
-    @if (loading) { <p>Loading...</p> }
+    <h2>Obtención de Todos Clásica</h2>
+    @if (loading) { <p>Cargando...</p> }
     @if (error) { <p>Error: {{ error }}</p> }
     @if (!loading && !error) {
       <ul>
@@ -37,7 +37,7 @@ The `HttpClient` API from `@angular/common/http` is the traditional way to perfo
         }
       </ul>
     }
-    <button (click)="reload()">Reload</button>
+    <button (click)="reload()">Recargar</button>
   `
 })
 export class ClassicTodosComponent implements OnInit, OnDestroy {
@@ -85,35 +85,35 @@ export class ClassicTodosComponent implements OnInit, OnDestroy {
 
 ---
 
-## 🌊 `resource()` API (Angular Signals)
+## 🌊 API `resource()` (Angular Signals)
 
-**What is it?**  
-`resource()` is a new API in Angular for reactive async data fetching with automatic cleanup and state tracking. It's signal-aware.
+**¿Qué es?**
+`resource()` es una nueva API en Angular para la obtención reactiva de datos asíncronos con limpieza automática y seguimiento de estado. Está orientada a signals.
 
-### ✅ Advantages
-- Tracks loading, error, and value states out of the box
-- Automatically cancels stale requests
-- Built for OnPush and Signals-first apps
-- Built-in `reload()`
+### ✅ Ventajas
+- Rastrea los estados de carga, error y valor de forma nativa.
+- Cancela automáticamente las peticiones obsoletas.
+- Diseñada para componentes OnPush y aplicaciones que priorizan signals.
+- Función `reload()` integrada.
 
-### ❌ Disadvantages
-- Not integrated with Angular’s HTTP client by default (uses `fetch()`)
-- Manual parsing and error handling
+### ❌ Desventajas
+- No está integrada con el cliente HTTP de Angular por defecto (usa `fetch()`).
+- Procesamiento manual de datos y manejo de errores.
 
-### 🧠 Core Concepts
-- Accepts a `params()` signal and a `loader()` function
-- Automatically invalidates and re-runs on param signal changes
-- Provides `.value()`, `.isLoading()`, `.error()`, `.status()`, and `.reload()`
+### 🧠 Conceptos Clave
+- Acepta un signal `params()` y una función `loader()`.
+- Se invalida y vuelve a ejecutar automáticamente al cambiar los signals de los parámetros.
+- Proporciona `.value()`, `.isLoading()`, `.error()`, `.status()` y `.reload()`.
 
-### 🧪 Example
+### 🧪 Ejemplo
 
 ```typescript
 @Component({
   selector: 'app-resource-todos',
   changeDetection: ChangeDetectionStrategy.OnPush,
   template: `
-    <h2>Resource Todos Fetch</h2>
-    @if(todos.isLoading()) { <p>Loading...</p> }
+    <h2>Obtención de Todos con Resource</h2>
+    @if(todos.isLoading()) { <p>Cargando...</p> }
     @if(todos.error()) { <p>Error: {{ todos.error() }}</p> }
     @if(todos.value()) {
       <ul>
@@ -122,9 +122,9 @@ export class ClassicTodosComponent implements OnInit, OnDestroy {
         }
       </ul>
     }
-    <button (click)="todos.reload()">Reload</button>
-    <button (click)="reloadWithSignal()">Reload with Signal</button>
-    <p>Status: {{ todos.status() }}</p>
+    <button (click)="todos.reload()">Recargar</button>
+    <button (click)="reloadWithSignal()">Recargar con Signal</button>
+    <p>Estado: {{ todos.status() }}</p>
     <p>Error: {{ todos.error() | json }}</p>
   `
 })
@@ -134,7 +134,7 @@ export class ResourceTodosComponent {
   readonly todos = resource({
     params: () => ({ id: this.signalToReload() }),
     loader: async ({ params, abortSignal }) => {
-      console.log(`Loading id ${params.id}`);
+      console.log(`Cargando id ${params.id}`);
       const res = await fetch(`https://jsonplaceholder.typicode.com/posts`, {
         signal: abortSignal
       });
@@ -150,35 +150,35 @@ export class ResourceTodosComponent {
 
 ---
 
-## ⚡ `httpResource()` API (Angular + HttpClient)
+## ⚡ API `httpResource()` (Angular + HttpClient)
 
-**What is it?**  
-`httpResource()` wraps `HttpClient` for direct integration with Angular’s signal-based change detection. Think of it as `resource()` + `HttpClient`.
+**¿Qué es?**
+`httpResource()` envuelve `HttpClient` para una integración directa con la detección de cambios basada en signals de Angular. Piensa en ello como `resource()` + `HttpClient`.
 
-### ✅ Advantages
-- Cleaner syntax using familiar `HttpClient` under the hood
-- Works seamlessly with Signals and OnPush CD
-- Automatically handles request status and cancellation
-- Built-in `.value()`, `.isLoading()`, `.error()`, `.reload()`, etc.
+### ✅ Ventajas
+- Sintaxis más limpia utilizando el familiar `HttpClient` internamente.
+- Funciona perfectamente con Signals y detección de cambios OnPush.
+- Maneja automáticamente el estado de la petición y la cancelación.
+- Proporciona `.value()`, `.isLoading()`, `.error()`, `.reload()`, etc.
 
-### ❌ Disadvantages
-- Less fine-grained control than classic `HttpClient`
-- May feel like a “black box” for debugging complex flows
+### ❌ Desventajas
+- Control menos granular que el `HttpClient` clásico.
+- Puede sentirse como una "caja negra" al depurar flujos complejos.
 
-### 🧠 Core Concepts
-- Uses `httpResource(() => config)` with `url`, `method`, `headers`, etc.
-- Provides reactive accessors for state and value
-- Easy drop-in for reactive Angular apps
+### 🧠 Conceptos Clave
+- Utiliza `httpResource(() => config)` con `url`, `method`, `headers`, etc.
+- Proporciona selectores reactivos para el estado y el valor.
+- Fácil de implementar en aplicaciones Angular reactivas.
 
-### 🧪 Example
+### 🧪 Ejemplo
 
 ```typescript
 @Component({
   selector: 'app-http-resource-todos',
   changeDetection: ChangeDetectionStrategy.OnPush,
   template: `
-    <h2>HTTP Resource Todos</h2>
-    @if(todos.isLoading()) { <p>Loading...</p> }
+    <h2>Todos con HTTP Resource</h2>
+    @if(todos.isLoading()) { <p>Cargando...</p> }
     @if(todos.error()) { <p>Error: {{ todos.error() }}</p> }
     @if(todos.value()) {
       <ul>
@@ -187,8 +187,8 @@ export class ResourceTodosComponent {
         }
       </ul>
     }
-    <button (click)="todos.reload()">Reload</button>
-    <p>Status: {{ todos.status() }}</p>
+    <button (click)="todos.reload()">Recargar</button>
+    <p>Estado: {{ todos.status() }}</p>
     <p>Error: {{ todos.error() | json }}</p>
   `
 })
@@ -207,14 +207,14 @@ export class HttpResourceTodosComponent {
 
 ---
 
-## 🧾 Summary Table
+## 🧾 Tabla de Resumen
 
-| Feature                | HttpClient (Classic) | `resource()` | `httpResource()` |
+| Característica         | HttpClient (Clásico) | `resource()` | `httpResource()` |
 |------------------------|:--------------------:|:------------:|:----------------:|
-| Reactive Signals       | ❌ No                | ✅ Yes       | ✅ Yes           |
-| Uses HttpClient        | ✅ Yes               | ❌ No (fetch)| ✅ Yes           |
-| Auto Abort/Cleanup     | ❌ Manual            | ✅ Yes       | ✅ Yes           |
-| Built-in State Mgmt    | ❌ Manual            | ✅ Yes       | ✅ Yes           |
-| ChangeDetection Safe   | ❌ markForCheck()    | ✅ Yes       | ✅ Yes           |
-| Reload Support         | ❌ Manual            | ✅ reload()  | ✅ reload()      |
-| Custom Headers/Config  | ✅ Yes               | ✅ (manual)  | ✅ Easy          |
+| Signals Reactivos      | ❌ No                | ✅ Sí        | ✅ Sí            |
+| Usa HttpClient         | ✅ Sí                | ❌ No (fetch)| ✅ Sí            |
+| Aborto/Limpieza Auto   | ❌ Manual            | ✅ Sí        | ✅ Sí            |
+| Gestión de Estado Integ.| ❌ Manual            | ✅ Sí        | ✅ Sí            |
+| Seguro para ChangeDetection| ❌ markForCheck() | ✅ Sí        | ✅ Sí            |
+| Soporte para Recargado | ❌ Manual            | ✅ reload()  | ✅ reload()      |
+| Cabeceras/Config Pers. | ✅ Sí                | ✅ (manual)  | ✅ Fácil         |

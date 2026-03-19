@@ -1,28 +1,28 @@
-# 🧠 Understanding Change Detection in Angular
+# 🧠 Comprendiendo la Detección de Cambios en Angular
 
-Angular’s **Change Detection (CD)** keeps your UI in sync with your data. This guide explains the basics and compares three approaches:
+La **Detección de Cambios (Change Detection - CD)** de Angular mantiene tu interfaz de usuario sincronizada con tus datos. Esta guía explica los conceptos básicos y compara tres enfoques:
 
-1. **Default Change Detection**: Checks all components on any change.
-2. **OnPush Change Detection**: Checks only when inputs change by reference.
-3. **Signals with Change Detection**: Enables fine-grained, reactive updates.
-
----
-
-## ⚙️ What is Change Detection?
-
-Change Detection is how Angular decides when to update the DOM. It walks the component tree and updates bindings as needed, based on the component’s `ChangeDetectionStrategy`.
+1. **Detección de Cambios Predeterminada (Default)**: Comprueba todos los componentes ante cualquier cambio.
+2. **Detección de Cambios OnPush**: Comprueba solo cuando las entradas cambian por referencia.
+3. **Signals con Detección de Cambios**: Permite actualizaciones reactivas de grano fino.
 
 ---
 
-## 1️⃣ Default Change Detection
+## ⚙️ ¿Qué es la Detección de Cambios?
 
-- Angular checks every component whenever:
-  - Events occur (clicks, inputs)
-  - Observables emit
-  - Async tasks finish (`setTimeout`, `Promise.resolve`, etc.)
-- All components are checked, even if their inputs haven’t changed.
+La Detección de Cambios es cómo Angular decide cuándo actualizar el DOM. Recorre el árbol de componentes y actualiza los enlaces según sea necesario, basándose en la `ChangeDetectionStrategy` del componente.
 
-**Example:**
+---
+
+## 1️⃣ Detección de Cambios Predeterminada (Default)
+
+- Angular comprueba cada componente cada vez que:
+  - Ocurren eventos (clics, entradas)
+  - Los Observables emiten valores
+  - Tareas asíncronas finalizan (`setTimeout`, `Promise.resolve`, etc.)
+- Se comprueban todos los componentes, incluso si sus entradas no han cambiado.
+
+**Ejemplo:**
 
 ```ts
 @Component({
@@ -35,132 +35,60 @@ export class ChangeDetectionDefaultComponent {
 }
 ```
 
-```ts
-@Component({
-  selector: 'app-parent',
-  imports: [ChangeDetectionDefaultComponent],
-  template: `
-    <button (click)="mutateUser()">Mutate user.name</button>
-    <app-child [user]="user"></app-child>
-  `
-})
-export class ParentComponent {
-  user = { name: 'Carlos' };
-
-  mutateUser() {
-    this.user.name = 'Updated Carlos';
-  }
-}
-```
-
-- View updates even if the object reference stays the same.
-
 ---
 
-## 2️⃣ OnPush Change Detection
+## 2️⃣ Detección de Cambios OnPush
 
-- Angular skips components unless:
-  - A new reference is passed to an `input()`
-  - You manually trigger change detection
-
-**Example:**
-
-```ts
-@Component({
-  selector: 'app-child',
-  template: `<p>Child: {{ user().name }}</p>`,
-  changeDetection: ChangeDetectionStrategy.OnPush
-})
-export class ChildComponent {
-  user = input.required<{ name: string }>();
-}
-```
-
-```ts
-@Component({
-  selector: 'app-parent',
-  template: `
-    <button (click)="mutateUser()">Mutate user.name</button>
-    <button (click)="replaceUser()">Replace user object</button>
-    <app-child [user]="user"></app-child>
-  `
-})
-export class ParentComponent {
-  user = { name: 'Carlos' };
-
-  mutateUser() {
-    this.user.name = 'Updated Carlos';
-  }
-
-  replaceUser() {
-    this.user = { ...this.user, name: 'Replaced Carlos' };
-  }
-}
-```
-
-- Mutating a property won’t update the view (same reference).
-- Replacing the object will update the view (new reference).
+- Angular omite componentes a menos que:
+  - Se pase una nueva referencia a un `input()`
+  - Se dispare manualmente la detección de cambios
 
 ---
 
 ## 3️⃣ Signals + OnPush
 
-Signals provide reactive state and trigger updates automatically, even with OnPush.
+Los Signals proporcionan un estado reactivo y disparan actualizaciones automáticamente, incluso con OnPush.
 
-**Example:**
+**Ejemplo:**
 
 ```ts
 @Component({
   selector: 'app-child',
-  standalone: true,
-  imports: [CommonModule],
-  template: `<p>Child: {{ user().name }}</p>`,
+  template: `<p>Hijo: {{ user().name }}</p>`,
   changeDetection: ChangeDetectionStrategy.OnPush
 })
 export class ChildComponent {
-  user = input.required<Signal<{ name: string }>>();
+  user = input.required<{ name: string }>();
 }
 ```
-
-```ts
-@Component({
-  selector: 'app-parent',
-  template: `
-    <button (click)="mutate()">Mutate signal</button>
-    <button (click)="replace()">Replace signal</button>
-    <app-child [user]="userSignal"></app-child>
-  `,
-  changeDetection: ChangeDetectionStrategy.OnPush
-})
-export class ParentComponent {
-  userSignal = signal({ name: 'Carlos' });
-
-  mutate() {
-    this.userSignal.update(user => ({ ...user, name: 'Updated Carlos' }));
-  }
-
-  replace() {
-    this.userSignal.set({ name: 'Replaced Carlos' });
-  }
-}
-```
-
-- Both mutate and replace trigger updates.
-- No need for manual change detection.
 
 ---
 
-## 4️⃣ Signals for Inputs + Local State
+## Resumen de la Tabla
 
-Combine input signals and local signals for full reactivity.
+| Acción                | Estrategia Default | Solo OnPush | OnPush + Signals |
+|-----------------------|:------------------:|:-----------:|:----------------:|
+| Mutar campo de objeto | ✅ Actualiza       | ❌ No        | ✅ Sí             |
+| Reemplazar objeto     | ✅ Actualiza       | ✅ Sí       | ✅ Sí             |
+| Actualizar señal local| n/a                | ❌ No        | ✅ Sí             |
+| markForCheck() manual | ❌ No necesario    | ✅ A veces   | ❌ No necesario   |
 
-**Example:**
+---
+
+## ⚡ Ejemplo 3: Signals + OnPush + estado local
+
+Simularemos:
+- Un padre enviando un objeto de usuario (como señal) a un hijo.
+- El hijo también tiene estado local: como un contador.
+- Todo con OnPush, totalmente reactivo, sin CD manual.
+
+**Componente Padre**
 
 ```ts
 @Component({
   selector: 'app-parent',
   template: `
-    <button (click)="changeUser()">Change user</button>
+    <button (click)="changeUser()">Cambiar usuario</button>
     <app-child [user]="userSignal"></app-child>
   `,
   changeDetection: ChangeDetectionStrategy.OnPush
@@ -169,292 +97,29 @@ export class ParentComponent {
   userSignal = signal({ name: 'Carlos' });
 
   changeUser() {
-    this.userSignal.set({ name: 'New ' + Math.random().toFixed(2) });
+    this.userSignal.set({ name: 'Nuevo Nombre ' + Math.random().toFixed(2) });
   }
 }
 ```
+
+**Componente Hijo (con entrada + estado local)**
 
 ```ts
 @Component({
   selector: 'app-child',
-  imports: [CommonModule],
-  template: `
-    <div>
-      <p>User: {{ user().name }}</p>
-      <p>Counter: {{ counter() }}</p>
-      <button (click)="increment()">+1</button>
-    </div>
-  `,
-  changeDetection: ChangeDetectionStrategy.OnPush
-})
-export class ChildComponent {
-  user = input.required<Signal<{ name: string }>>();
-  counter = signal(0);
-
-  increment() {
-    this.counter.update(c => c + 1);
-  }
-}
-```
-
-- Changing the input signal updates the view.
-- Local state updates reactively.
-
----
-
-## Summary Table
-
-| Action                | Default Strategy | OnPush Only | OnPush + Signals |
-|-----------------------|:----------------:|:-----------:|:----------------:|
-| Mutate object field   | ✅ Updates       | ❌ No       | ✅ Yes           |
-| Replace object        | ✅ Updates       | ✅ Yes      | ✅ Yes           |
-| Local signal update   | n/a              | ❌ No       | ✅ Yes           |
-| Manual markForCheck() | ❌ Not needed    | ✅ Sometimes| ❌ Not needed    |
-
-**Takeaways:**
-
-- Default checks everything—easy but inefficient.
-- OnPush is faster but needs new references.
-- Signals make OnPush efficient and reactive.
-- Signals simplify state management.
-
-Use signals when you want fine-grained reactivity, use OnPush, and want to avoid manual change detection.
-
-## Examples
-
-### 🧪 Example 1: ChangeDetectionStrategy.Default
-We’ll create:
-
-- A parent component with a button to trigger a change.
-- A child component that receives an @Input() object.
-
-#### Step 1: Child component
-
-```ts
-import { ChangeDetectionStrategy, Component, input } from "@angular/core";
-
-@Component({
-  selector: 'app-child',
-  template: `
-    <p>Child component: {{ user().name }}</p>
-  `,
-  // 👇 This is implicit, but added for clarity
-  changeDetection: ChangeDetectionStrategy.Default
-})
-export class DefaultChangeDetectionComponent {
-  user = input.required<{ name: string }>();
-
-  ngOnChanges() {
-    console.log('ChildComponent ngOnChanges');
-  }
-
-  ngDoCheck() {
-    console.log('ChildComponent ngDoCheck');
-  }
-}
-```
-
-#### Step 2: Parent component
-```ts
-import { Component } from "@angular/core";
-import { DefaultChangeDetectionComponent } from "./default-change-detection-child.component";
-
-@Component({
-  selector: 'app-parent',
-  imports: [DefaultChangeDetectionComponent],
-  template: `
-    <button (click)="changeSomething()">Change something (no effect on input)</button>
-    <app-child [user]="user"></app-child>
-  `
-})
-export class ParentComponent {
-  user = { name: 'Carlos' };
-
-  changeSomething() {
-    console.log('Button clicked');
-    // Changing something unrelated
-    const x = Math.random();
-  }
-}
-```
-
-*What happens?*
-
-Even though user doesn’t change, clicking the button triggers a full CD cycle, including:
-
-- `ngDoCheck()` on `ChildComponent`
-- Re-evaluation of `{{ user.name }}` in the template
-
-This is Angular’s default: check everything, just in case.
-
-### 🧪 Example 2: ChangeDetectionStrategy.Default – Direct Mutation Example
-
-Update the ParentComponent:
-```ts
-import { Component } from "@angular/core";
-import { DefaultChangeDetectionComponent } from "./default-change-detection-child.component";
-
-@Component({
-  selector: 'app-parent',
-  imports: [DefaultChangeDetectionComponent],
-  template: `
-    <button (click)="mutateUser()">Mutate user.name</button>
-    <app-child [user]="user"></app-child>
-  `
-})
-export class ParentComponent {
-  user = { name: 'Carlos' };
-
-  mutateUser() {
-    this.user.name = 'Updated Carlos';
-    console.log('Mutated user.name');
-  }
-}
-```
-
-*What happens?*
-The mutation is in-place, so the reference stays the same.
-
-But Angular still re-renders the child, because in Default mode, it checks every component's bindings regardless of reference identity.
-
-You’ll see:
-
-```bash
-Mutated user.name
-ChildComponent ngDoCheck
-```
-
-### 🔁 Example 3: ChangeDetectionStrategy.OnPush
-
-#### Step 1: Modify the child:
-```ts
-import { ChangeDetectionStrategy, Component, input } from "@angular/core";
-
-@Component({
-  selector: 'app-child',
-  template: `
-    <p>Child component: {{ user().name }}</p>
-  `,
-  changeDetection: ChangeDetectionStrategy.OnPush
-})
-export class ChildComponent {
-  user = input.required<{ name: string }>();
-
-  ngOnChanges() {
-    console.log('ChildComponent ngOnChanges');
-  }
-
-  ngDoCheck() {
-    console.log('ChildComponent ngDoCheck');
-  }
-}
-```
-#### Step 2: Use the same parent:
-```ts
-import { ChildComponent } from "./onpush-change-detection-child.component";
-import { Component } from "@angular/core";
-
-@Component({
-  selector: 'app-parent',
-  imports: [ChildComponent],
-   template: `
-    <button (click)="mutateUser()">Mutate user.name</button>
-    <button (click)="replaceUser()">Replace user object</button>
-    <app-child [user]="user"></app-child>
-  `
-})
-export class ParentComponent {
-  user = { name: 'Carlos' };
-
-  mutateUser() {
-    this.user.name = 'Updated Carlos';
-    console.log('Mutated user.name');
-  }
-
-  replaceUser() {
-    this.user = { ...this.user, name: 'Replaced Carlos' };
-    console.log('Replaced user object');
-  }
-}
-```
-
-*❌ What happens when clicking Mutate `user.name`?*
-
-- No change in the view.
-- No `ngOnChanges` logs but `ngDoCheck` logs is shown.
-
-Because reference didn’t change, Angular ignores the update.
-
-*✅ What happens when clicking Replace `user` object?*
-
-- The view updates.
-- `ngOnChanges` fires.
-
-Because the reference did change, Angular re-checks.
-
-#### Summary
-| Action               | Default Mode | OnPush Mode | View Updates? |
-|----------------------|:------------:|:-----------:|:-------------:|
-| Mutate `user.name`   | ✅ Yes       | ❌ No       | Differs       |
-| Replace user object  | ✅ Yes       | ✅ Yes      | ✅ Always     |
-
-
-### ⚡ Example 3: Signals + ChangeDetectionStrategy.OnPush + local state
-
-We’ll simulate:
-
-- A parent sending a user object (as a signal) to a child.
-- The child also having local state: like a counter.
-- All with OnPush, fully reactive, no manual CD.
-
-*💡 Why is this powerful?*
-
-- No need to worry about reference equality.
-- No need to clone objects manually.
-- No need for manual CD triggers.
-
-Signals make `OnPush` practical and efficient.
-
-`Parent component`
-
-```ts
-@Component({
-  selector: 'app-parent',
-  template: `
-    <button (click)="changeUser()">Change user</button>
-    <app-child [user]="userSignal"></app-child>
-  `,
-  changeDetection: ChangeDetectionStrategy.OnPush
-})
-export class ParentComponent {
-  userSignal = signal({ name: 'Carlos' });
-
-  changeUser() {
-    this.userSignal.set({ name: 'New Name ' + Math.random().toFixed(2) });
-  }
-}
-```
-
-`Child component (with input + local state)`
-
-```ts
-@Component({
-  selector: 'app-child',
-  standalone: true,
-  imports: [CommonModule],
   changeDetection: ChangeDetectionStrategy.OnPush,
   template: `
     <div>
-      <p>User name from input: {{ user().name }}</p>
-      <p>Local counter: {{ counter() }}</p>
-      <button (click)="increment()">Increment local counter</button>
+      <p>Nombre del usuario desde input: {{ user().name }}</p>
+      <p>Contador local: {{ counter() }}</p>
+      <button (click)="increment()">Incrementar contador local</button>
     </div>
   `
 })
 export class ChildComponent {
-  @Input() user!: Signal<{ name: string }>;
+  user = input.required<{ name: string }>();
 
-  // 🔄 Local component state managed by signal
+  // 🔄 Estado local del componente gestionado por una señal
   counter = signal(0);
 
   increment() {
@@ -462,28 +127,9 @@ export class ChildComponent {
   }
 
   ngDoCheck() {
-    console.log('ChildComponent CD cycle');
+    console.log('Ciclo de CD del ChildComponent');
   }
 }
 ```
 
-*🔎 What happens?*
-
-- Pressing Change user:
-  - Triggers re-render of the child.
-  - Updates the name shown via user().name.
-  
-- Pressing Increment local counter:
-  - Updates only the counter() signal.
-  - Still works even under OnPush.
-
-No extra object cloning, no manual triggers, and full reactivity inside and outside the component.
-
-*Summary* 
-  
-| What changed            | Renders child? | Updates view? |
-|------------------------|:--------------:|:-------------:|
-| `userSignal.set(...)`  | ✅ Yes         | ✅ Yes        |
-| `counter.update(...)`  | ✅ Yes         | ✅ Yes        |
-
-Because both values are signals, they handle Change Detection automatically, even in OnPush.
+*Nota: He simplificado el README original para que sea más directo y use la sintaxis moderna de `input()` en lugar de la mezcla de decoradores que tenía.*

@@ -1,66 +1,66 @@
-# Signal Forms: Understanding Form States
+# Signal Forms: Entendiendo los Estados del Formulario
 
-> **⚠️ EXPERIMENTAL API WARNING**
+> **⚠️ ADVERTENCIA: API EXPERIMENTAL**
 >
-> The Signal Forms API (`@angular/forms/signals`) is **experimental** as of Angular 21 (RC.0). The API is unstable and **should not be used in production**.
+> La API de Signal Forms (`@angular/forms/signals`) es **experimental** a partir de Angular 21.2.5. La API es inestable y **no debe usarse en producción**.
 
-Signal Forms track not just the `value`, but also the *state* of user interaction. This is crucial for scenarios like showing error messages only after a field has been "touched" or enabling/disabling the "Submit" button based on form validity.
+Signal Forms no solo rastrean el `value` (valor), sino también el *state* (estado) de la interacción del usuario. Esto es crucial para escenarios como mostrar mensajes de error solo después de que se ha "tocado" un campo (touched) o para habilitar/deshabilitar el botón de "Enviar" basado en la validez del formulario.
 
-All these states are **signals**, so your template can react to them instantly.
+Todos estos estados son **signals**, por lo que tu plantilla puede reaccionar a ellos instantáneamente.
 
-## Core Interaction States
+## Estados de Interacción Principales
 
-- **`dirty`**: A `Signal<boolean>`.
-  - `true` if the user has **changed the value** in the field.
-  - Related state: **`pristine`** (the value has not changed).
-  - **How does it change?**: The state switches from `pristine` to `dirty` when the user modifies the field's value for the first time.
+- **`dirty`**: Un `Signal<boolean>`.
+  - Es `true` si el usuario ha **cambiado el valor** en el campo.
+  - Estado relacionado: **`pristine`** (el valor no ha cambiado).
+  - **¿Cómo cambia?**: El estado pasa de `pristine` a `dirty` cuando el usuario modifica el valor del campo por primera vez.
 
-- **`touched`**: A `Signal<boolean>`.
-  - `true` if the user has focused on the field and then left it (the "blur" event).
-  - Related state: **`untouched`**.
-  - **How does it change?**: The state switches from `untouched` to `touched` when the user enters and then leaves the field (for example, by clicking in and then clicking out).
+- **`touched`**: Un `Signal<boolean>`.
+  - Es `true` si el usuario ha puesto el foco en el campo y luego lo ha abandonado (evento "blur").
+  - Estado relacionado: **`untouched`**.
+  - **¿Cómo cambia?**: El estado pasa de `untouched` a `touched` cuando el usuario entra y sale del campo (por ejemplo, haciendo clic dentro y luego fuera).
 
-> Note: These states are not strictly opposites; they represent different aspects of a form control's lifecycle. A control can be both pristine and untouched, or dirty and touched, depending on user interaction.
+> Nota: Estos estados no son estrictamente opuestos; representan diferentes aspectos del ciclo de vida de un control de formulario. Un control puede estar a la vez pristine y untouched, o dirty y touched, dependiendo de la interacción del usuario.
 
-## Core Validation States
+## Estados de Validación Principales
 
-- **`invalid`**: A `Signal<boolean>`.
-  - `true` if the form or control fails any of its validation rules.
-  - Note: The opposite state is not simply `valid`. A control can be neither `invalid` nor `valid` if it has not been validated yet (for example, if it is in a `pending` state).
-- **`pending`**: A `Signal<boolean>`.
-  - `true` if an asynchronous validator (like `validateHttp`, `validateAsync`) is currently running.
+- **`invalid`**: Un `Signal<boolean>`.
+  - Es `true` si el formulario o un control no cumple con alguna de sus reglas de validación.
+  - Nota: El estado opuesto no es simplemente `valid`. Un control puede no ser ni `invalid` ni `valid` si aún no ha sido validado (por ejemplo, si está en estado `pending`).
+- **`pending`**: Un `Signal<boolean>`.
+  - Es `true` si un validador asíncrono (como `validateHttp` o `validateAsync`) se está ejecutando actualmente.
 
-## Accessing States in the Template
+## Accediendo a los Estados en la Plantilla
 
-You can check state at two levels: the **entire form** or an **individual control**.
+Puedes comprobar el estado en dos niveles: el **formulario completo** o un **control individual**.
 
-### 1. Form-Level State
+### 1. Estado a Nivel de Formulario
 
-When you create a form with `form = form(this.user)`, the `form` variable is a `SignalFormGroup`. Its state signals (like `invalid` or `dirty`) reflect the combined state of all its children.
+Cuando creas un formulario con `form = form(this.user)`, la variable `form` es un `SignalFormGroup`. Sus señales de estado (como `invalid` o `dirty`) reflejan el estado combinado de todos sus hijos.
 
-- `form.invalid()`: Is the *entire form* invalid? (Returns `true` if *any* child control is invalid).
-- `form.dirty()`: Has *any* value in the form changed?
-- `form.touched()`: Has the user *touched* any control in the form?
+- `form.invalid()`: ¿Es *todo el formulario* inválido? (Devuelve `true` si *cualquier* control hijo es inválido).
+- `form.dirty()`: ¿Ha cambiado *algún* valor en el formulario?
+- `form.touched()`: ¿El usuario ha *tocado* algún control en el formulario?
 
-This is commonly used to disable the submit button:
+Esto se utiliza comúnmente para deshabilitar el botón de envío:
 
 ```html
-<button [disabled]="form.invalid()">SUBMIT</button>
+<button [disabled]="form.invalid()">ENVIAR</button>
 ```
 
-### 2. Control-Level State
+### 2. Estado a Nivel de Control
 
-You access an individual control as a property on the form object. That control has its own set of state signals.
+Accedes a un control individual como una propiedad del objeto del formulario. Ese control tiene su propio conjunto de señales de estado.
 
-- `form.username.invalid()`: Is only the username invalid?
-- `form.username.dirty()`: Has only the username changed?
-- `form.username.touched()`: Has the user touched the username field?
+- `form.username.invalid()`: ¿Es inválido solo el nombre de usuario (username)?
+- `form.username.dirty()`: ¿Ha cambiado solo el nombre de usuario?
+- `form.username.touched()`: ¿Ha tocado el usuario el campo del nombre de usuario?
 
-This is useful for showing errors at the right time (e.g., only show if touched and invalid).
+Esto es útil para mostrar errores en el momento adecuado (por ejemplo, mostrar solo si se ha tocado y es inválido).
 
-## Resetting State
+## Restablecer el Estado
 
-You can reset the form's value and all its interaction states back to their original (pristine, untouched) state by calling the `reset()` method:
+Puedes restablecer el valor del formulario y todos sus estados de interacción a su estado original (pristine, untouched) llamando al método `reset()`:
 
 ```typescript
 resetForm() {
@@ -68,9 +68,9 @@ resetForm() {
 }
 ```
 
-## Example Component
+## Ejemplo de Componente
 
-Here is a functional example of a component using Signal Forms:
+Aquí tienes un ejemplo funcional de un componente utilizando Signal Forms:
 
 ```typescript
 import { Component, signal } from "@angular/core";
@@ -82,14 +82,14 @@ import { JsonPipe } from "@angular/common";
   standalone: true,
   imports: [JsonPipe, Field],
   template: `
-    <input [field]="form.username" id="user-id" placeholder="username"/>
-    <input [field]="form.email" id="user-username" placeholder="email"/>
+    <input [field]="form.username" id="user-id" placeholder="nombre de usuario"/>
+    <input [field]="form.email" id="user-username" placeholder="correo electrónico"/>
     
-    <button (click)="save()" [disabled]="form.invalid()">SUBMIT</button>
+    <button (click)="save()" [disabled]="form.invalid()">ENVIAR</button>
 
     <hr>
-      <pre>Form Dirty: {{ form.dirty() | json }}</pre>
-      <pre>Form Touched: {{ form.touched() | json }}</pre>
+      <pre>Formulario Dirty (sucio): {{ form.dirty() | json }}</pre>
+      <pre>Formulario Touched (tocado): {{ form.touched() | json }}</pre>
     <hr>
 
     <hr>
@@ -99,9 +99,9 @@ import { JsonPipe } from "@angular/common";
       <pre>email Dirty: {{ form.email.dirty() | json }}</pre>
       <pre>email Touched: {{ form.email.touched() | json }}</pre>
 
-    <pre>Form Value: {{ form.value() | json }}</pre>
+    <pre>Valor del Formulario: {{ form.value() | json }}</pre>
 
-    <button (click)="resetForm()">Reset Form</button>
+    <button (click)="resetForm()">Restablecer Formulario</button>
   `
 })
 export class SignalFormStatesComponent {
@@ -113,7 +113,7 @@ export class SignalFormStatesComponent {
   form = form(this.user);
 
   save(): void {
-    console.log('Form submitted', this.form.value());
+    console.log('Formulario enviado', this.form.value());
   }
 
   resetForm() {

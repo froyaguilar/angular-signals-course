@@ -1,54 +1,54 @@
-# Signal Forms: Custom Synchronous Validators
+# Signal Forms: Validadores Síncronos Personalizados
 
-> **⚠️ EXPERIMENTAL API WARNING**  
-> The Signal Forms API (`@angular/forms/signals`) is **experimental** as of Angular 21 (RC.0). The API is unstable and **should not be used in production**.
+> **⚠️ ADVERTENCIA: API EXPERIMENTAL**  
+> La API de Signal Forms (`@angular/forms/signals`) es **experimental** a partir de Angular 21.2.5. La API es inestable y **no debe usarse en producción**.
 
-While built-in validators (`required`, `minLength`, etc.) cover common cases, you will often need to implement your own business logic (e.g., "username cannot be 'admin'").
+Aunque los validadores integrados (`required`, `minLength`, etc.) cubren los casos comunes, a menudo necesitarás implementar tu propia lógica de negocio (por ejemplo, "el nombre de usuario no puede ser 'admin'").
 
-Signal Forms provides the **`validate`** function for custom synchronous logic and the **`customError`** helper to create a standardized error object.
+Signal Forms proporciona la función **`validate`** para la lógica síncrona personalizada y el ayudante (helper) **`customError`** para crear un objeto de error estandarizado.
 
 ---
 
-## 1. Key Functions Explained
+## 1. Explicación de las Funciones Clave
 
 ### `validate(path, validationFn)`
 
-Adds a custom validation rule.
+Añade una regla de validación personalizada.
 
-- **`path`**: The path to the control you want to validate (e.g., `path.username`).
-- **`validationFn`**: A callback function with your custom logic. Receives the control's context as its argument.
+- **`path`**: La ruta al control que quieres validar (por ejemplo, `path.username`).
+- **`validationFn`**: Una función de retorno (callback) con tu lógica personalizada. Recibe el contexto del control como argumento.
 
-#### The Validation Callback: `(childField) => ...`
+#### El Callback de Validación: `(childField) => ...`
 
-- **`childField`**: The `ChildFieldContext` (not the signal itself). Provides access to the control's properties and value.
-- **`childField.value()`**: Gets the control's current value.
-- **Return Value**:
-  - Return **`null`** if the control is **valid**.
-  - Return a **`ValidationErrors` object** if the control is **invalid**.
+- **`childField`**: El `ChildFieldContext` (no es el signal en sí). Proporciona acceso a las propiedades y al valor del control.
+- **`childField.value()`**: Obtiene el valor actual del control.
+- **Valor de Retorno**:
+  - Devuelve **`null`** si el control es **válido**.
+  - Devuelve un **objeto `ValidationErrors`** si el control es **inválido**.
 
 ### `customError(options)`
 
-Helper to create a `ValidationErrors` object.
+Ayudante para crear un objeto `ValidationErrors`.
 
-- **`options`**: An object with:
-  - **`kind`**: A machine-readable string key for the error (e.g., `usernamesForbidden`).
-  - **`message`**: A human-readable message for display.
+- **`options`**: Un objeto con:
+  - **`kind`**: Una clave de cadena legible por máquina para el error (por ejemplo, `usernamesForbidden`).
+  - **`message`**: Un mensaje legible por humanos para mostrar en la interfaz.
 
 ---
 
-## 2. Component Setup (Applying Custom Validation)
+## 2. Configuración del Componente (Aplicando Validación Personalizada)
 
-Add the `validate` function inside the `form()` callback, alongside built-in validators.
+Añade la función `validate` dentro del callback de `form()`, junto con los validadores integrados.
 
 ```typescript
 import { Component, signal } from "@angular/core";
 import { 
   Field, 
-  customError, // Import customError
+  customError, // Importar customError
   form, 
   maxLength, 
   pattern, 
-  validate, // Import validate
+  validate, // Importar validate
   minLength, 
   required 
 } from '@angular/forms/signals';
@@ -67,13 +67,13 @@ export class SignalFormCustomValidationComponent {
   });
 
   form = form(this.user, path => {
-    required(path.username, { message: 'username is required' });
-    minLength(path.username, 3, { message: 'username must be at least 3 characters long' });
-    maxLength(path.username, 10, { message: 'username must be at most 10 characters long' });
+    required(path.username, { message: 'El nombre de usuario es obligatorio' });
+    minLength(path.username, 3, { message: 'El nombre de usuario debe tener al menos 3 caracteres' });
+    maxLength(path.username, 10, { message: 'El nombre de usuario debe tener como máximo 10 caracteres' });
     required(path.email);
     pattern(path.email, /^[a-z0-9._%+-]+@[a-z0-9.-]+\.[a-z]{2,4}$/);
 
-    // Custom Validator
+    // Validador Personalizado
     validate(path.username, (childField) => {
       const reservedUsernames = ['admin', 'administrator', 'root'];
       const currentValue = childField.value();
@@ -82,13 +82,13 @@ export class SignalFormCustomValidationComponent {
       }
       return customError({
         kind: 'usernamesForbidden',
-        message: 'username cannot be a reserved username',
+        message: 'El nombre de usuario no puede ser un nombre reservado',
       });
     });
   });
 
   save(): void {
-    console.log('Form submitted', this.form().value());
+    console.log('Formulario enviado', this.form().value());
   }
 
   resetForm(){
@@ -99,24 +99,24 @@ export class SignalFormCustomValidationComponent {
 
 ---
 
-## 3. Template (Displaying Custom Errors)
+## 3. Plantilla (Mostrando Errores Personalizados)
 
-The template works the same as for built-in validators. The `errors()` signal will include your custom error object if validation fails.
+La plantilla funciona igual que con los validadores integrados. El signal `errors()` incluirá tu objeto de error personalizado si la validación falla.
 
 ```html
-<input [field]="form().username" id="user-id" placeholder="username"/>
-<input [field]="form().email" id="user-username" placeholder="email"/>
-<button (click)="save()" [disabled]="form().invalid()">SUBMIT</button>
+<input [field]="form().username" id="user-id" placeholder="nombre de usuario"/>
+<input [field]="form().email" id="user-username" placeholder="correo electrónico"/>
+<button (click)="save()" [disabled]="form().invalid()">ENVIAR</button>
 
-<pre>Form Value: {{form().value() | json}}</pre>
+<pre>Valor del Formulario: {{form().value() | json}}</pre>
 
-<button (click)="resetForm()">Reset Form</button>
+<button (click)="resetForm()">Restablecer Formulario</button>
 
 @if(form().invalid()){
-  <h2>Errors</h2>
+  <h2>Errores</h2>
   <pre style="color:red">username: {{ form().username().errors() | json }}</pre>
 
-  <h2>username Errors individual messages</h2>
+  <h2>Mensajes de error individuales para username</h2>
   @let usernameErrors = form().username().errors();
 
   @for (error of usernameErrors; track $index) {

@@ -1,12 +1,12 @@
-# 🔁 Two-Way Data Binding in Angular: Classic vs Signals
+# 🔁 Doble Enlace de Datos en Angular: Clásico vs Signals
 
-Angular supports multiple forms of two-way data binding. Signals introduce a **reactive and declarative** way to bind values both **from parent to child** and **from user input to model**.
+Angular admite múltiples formas de doble enlace de datos (two-way data binding). Los Signals introducen una forma **reactiva y declarativa** de vincular valores tanto **de padre a hijo** como **de la entrada del usuario al modelo**.
 
 ---
 
-## ✅ 1. Classic `[(ngModel)]` (FormsModule)
+## ✅ 1. Clásico `[(ngModel)]` (FormsModule)
 
-The traditional approach uses `FormsModule` and the `ngModel` directive:
+El enfoque tradicional utiliza `FormsModule` y la directiva `ngModel`:
 
 ### 🔧 `ClassicTwoWayComponent`
 
@@ -18,9 +18,9 @@ import { FormsModule } from '@angular/forms';
   selector: 'app-classic-two-way',
   imports: [FormsModule],
   template: `
-    <h2>Classic [(ngModel)] Binding</h2>
-    <input [(ngModel)]="name" placeholder="Enter your name">
-    <p>Hello, {{ name }}!</p>
+    <h2>Enlace [(ngModel)] Clásico</h2>
+    <input [(ngModel)]="name" placeholder="Introduce tu nombre">
+    <p>¡Hola, {{ name }}!</p>
   `
 })
 export class ClassicTwoWayComponent {
@@ -28,17 +28,17 @@ export class ClassicTwoWayComponent {
 }
 ```
 
-**Notes:**
-- ✅ Easy and declarative
-- ❌ Requires FormsModule
-- ❌ Not reactive with Angular signals
-- ❌ Doesn't work well with `ChangeDetectionStrategy.OnPush`
+**Notas:**
+- ✅ Fácil y declarativo.
+- ❌ Requiere FormsModule.
+- ❌ No es reactivo con los signals de Angular.
+- ❌ No funciona bien con `ChangeDetectionStrategy.OnPush`.
 
 ---
 
-## 🆕 2. Signals: Manual Two-Way Binding
+## 🆕 2. Signals: Doble Enlace Manual
 
-Use a `model()` signal and manually connect the DOM event (`input`) to `set()`.
+Utiliza un signal `model()` y conecta manualmente el evento del DOM (`input`) a `set()`.
 
 ### 🔧 `SignalsTwoWayComponent`
 
@@ -48,8 +48,8 @@ import { Component, model } from '@angular/core';
 @Component({
   selector: 'app-root',
   template: `
-    <input [value]="name()" (input)="onInput($event)" placeholder="Enter your name">
-    <p>Hello, {{ name() }}</p>
+    <input [value]="name()" (input)="onInput($event)" placeholder="Introduce tu nombre">
+    <p>Hola, {{ name() }}</p>
   `
 })
 export class SignalsTwoWayComponent {
@@ -64,19 +64,19 @@ export class SignalsTwoWayComponent {
 }
 ```
 
-**Notes:**
-- ✅ Fully reactive
-- ✅ No FormsModule required
-- ❌ Slightly more boilerplate (manual input handler)
-- ✅ Works perfectly with OnPush
+**Notas:**
+- ✅ Completamente reactivo.
+- ✅ No requiere FormsModule.
+- ❌ Un poco más de código (manejador de entrada manual).
+- ✅ Funciona perfectamente con OnPush.
 
 ---
 
-## 💡 3. Signals: Component-Level Two-Way Binding with `model()` + `[(...)]`
+## 💡 3. Signals: Doble Enlace a nivel de Componente con `model()` + `[(...)]`
 
-Replace both `input()` and `output()` with a single `model()` binding, and use `[(count)]` in the parent.
+Sustituye tanto `input()` como `output()` por un único enlace `model()`, y utiliza `[(count)]` en el padre.
 
-### 🧱 `ChildComponent` (with `model.required()`)
+### 🧱 `ChildComponent` (con `model.required()`)
 
 ```typescript
 import { Component, ChangeDetectionStrategy, effect, model } from '@angular/core';
@@ -86,8 +86,8 @@ import { Component, ChangeDetectionStrategy, effect, model } from '@angular/core
   changeDetection: ChangeDetectionStrategy.OnPush,
   template: `
     <div class="child-box">
-      <p>Child count = {{ count() }}</p>
-      <button (click)="increment()">Increment from Child</button>
+      <p>Contador del hijo = {{ count() }}</p>
+      <button (click)="increment()">Incrementar desde el Hijo</button>
     </div>
   `
 })
@@ -96,7 +96,7 @@ export class ChildComponent {
 
   constructor() {
     effect(() => {
-      console.log('🔄 [effect] Child count changed to', this.count());
+      console.log('🔄 [effect] El contador del hijo cambió a', this.count());
     });
   }
 
@@ -106,7 +106,7 @@ export class ChildComponent {
 }
 ```
 
-### 🧱 `ParentComponent` using `[(count)]`
+### 🧱 `ParentComponent` usando `[(count)]`
 
 ```typescript
 import { Component, ChangeDetectionStrategy, signal } from '@angular/core';
@@ -118,10 +118,10 @@ import { ChildComponent } from './child.component';
   changeDetection: ChangeDetectionStrategy.OnPush,
   template: `
     <div class="parent-box">
-      <h2>Parent using model()</h2>
-      <button (click)="incrementCount()">+1 from Parent</button>
+      <h2>Padre usando model()</h2>
+      <button (click)="incrementCount()">+1 desde el Padre</button>
       <app-child [(count)]="count"></app-child>
-      <p>Parent sees count = {{ count() }}</p>
+      <p>El padre ve el contador = {{ count() }}</p>
     </div>
   `
 })
@@ -134,26 +134,26 @@ export class ModelIOSignalComponent {
 }
 ```
 
-**Notes:**
-- ✅ Super clean two-way binding via `[(count)]`
-- ✅ No `input`, `output`, or `EventEmitter`
-- ✅ No `ngOnChanges` or manual sync logic
-- ✅ Fully reactive and OnPush-compatible
+**Notas:**
+- ✅ Enlace bidireccional súper limpio mediante `[(count)]`.
+- ✅ Sin `input`, `output` o `EventEmitter`.
+- ✅ Sin `ngOnChanges` ni lógica de sincronización manual.
+- ✅ Completamente reactivo y compatible con OnPush.
 
 ---
 
-## 🧠 Summary: Which Should You Use?
+## 🧠 Resumen: ¿Cuál deberías usar?
 
-| Use Case                        | Recommended Approach                |
-|----------------------------------|-------------------------------------|
-| Legacy app with FormsModule      | `[(ngModel)]`                       |
-| Reactive app with signals        | `model()` + `[(...)]`               |
-| Simple forms without boilerplate | Manual signals + `set()`            |
-| Parent-child coordination        | `model.required()` + `[(...)]`      |
+| Caso de Uso                     | Enfoque Recomendado                 |
+|---------------------------------|--------------------------------------|
+| App legada con FormsModule      | `[(ngModel)]`                        |
+| App reactiva con signals        | `model()` + `[(...)]`                |
+| Formularios simples sin boilerplate| Signals manuales + `set()`          |
+| Coordinación padre-hijo         | `model.required()` + `[(...)]`       |
 
 ---
 
-## 📌 Final Tip
+## 📌 Consejo Final
 
-- ✅ Use `model()` when both parent and child need to sync on the same signal.
-- ✅ For user input, signals let you fully eliminate FormsModule and gain finer control.
+- ✅ Usa `model()` cuando tanto el padre como el hijo necesiten estar sincronizados bajo el mismo signal.
+- ✅ Para la entrada del usuario, los signals te permiten eliminar completamente FormsModule y obtener un control más fino.

@@ -1,27 +1,27 @@
-# RxJS Interop with Angular Signals
+# Interoperabilidad de RxJS con Angular Signals
 
-Angular provides utilities to **bridge Signals and RxJS**, enabling smooth interoperability in both directions. This is useful for migrating RxJS-based code or combining Signals with the RxJS ecosystem.
+Angular proporciona utilidades para **conectar Signals y RxJS**, permitiendo una interoperabilidad fluida en ambas direcciones. Esto es útil para migrar código basado en RxJS o combinar Signals con el ecosistema de RxJS.
 
-The package [`@angular/core/rxjs-interop`] includes helpers:
+El paquete [`@angular/core/rxjs-interop`] incluye las siguientes utilidades:
 
-- [`toSignal()`](#tosignal): Converts an RxJS `Observable` to a Signal
-- [`toObservable()`](#toobservable): Converts a Signal to an RxJS `Observable`
-- [`takeUntilDestroyed()`](#takeuntildestroyed): Automatic cleanup for subscriptions
-- [`rxResource`](#rxresource): Reactive resource management
-- [`outputFromObservable` / `outputToObservable`](#outputfromobservable-and-outputtoobservable): Interop for component outputs
+- [`toSignal()`](#tosignal): Convierte un `Observable` de RxJS en un Signal.
+- [`toObservable()`](#toobservable): Convierte un Signal en un `Observable` de RxJS.
+- [`takeUntilDestroyed()`](#takeuntildestroyed): Limpieza automática para suscripciones.
+- [`rxResource`](#rxresource): Gestión reactiva de recursos.
+- [`outputFromObservable` / `outputToObservable`](#outputfromobservable-y-outputtoobservable): Interoperabilidad para las salidas (outputs) de los componentes.
 
 ---
 
 ## `toSignal()`
 
-**Purpose:** Convert an `Observable` into a Signal for reactive UI updates with automatic change detection.
+**Propósito:** Convertir un `Observable` en un Signal para actualizaciones reactivas de la interfaz de usuario con detección de cambios automática.
 
-**Benefits:**
-- Use RxJS streams inside Signals-based components
-- Simplifies template bindings
-- Supports `initialValue` and error handling
+**Beneficios:**
+- Usa flujos de RxJS dentro de componentes basados en Signals.
+- Simplifica los enlaces en las plantillas (templates).
+- Soporta `initialValue` y manejo de errores.
 
-**Syntax:**
+**Sintaxis:**
 ```ts
 toSignal<T>(
   observable$: Observable<T>,
@@ -35,7 +35,7 @@ toSignal<T>(
 ): Signal<T>
 ```
 
-**Example:**
+**Ejemplo:**
 ```ts
 import { Component } from '@angular/core';
 import { interval } from 'rxjs';
@@ -44,8 +44,8 @@ import { toSignal } from '@angular/core/rxjs-interop';
 @Component({
   selector: 'app-ticker-signals',
   template: `
-    <h2>Signals Ticker</h2>
-    <p>Count (Signal) = {{ counter() }}</p>
+    <h2>Ticker con Signals</h2>
+    <p>Contador (Signal) = {{ counter() }}</p>
   `
 })
 export class TickerSignalsComponent {
@@ -53,24 +53,24 @@ export class TickerSignalsComponent {
   readonly counter = toSignal(this.counter$, { initialValue: 0 });
 }
 ```
-Transforms an RxJS `interval()` Observable into a Signal. The template reacts automatically to updates.
+Transforma un Observable `interval()` de RxJS en un Signal. La plantilla reacciona automáticamente a las actualizaciones.
 
 ---
 
 ## `toObservable()`
 
-**Purpose:** Expose a Signal as an RxJS Observable for use with RxJS operators, libraries, or effects.
+**Propósito:** Exponer un Signal como un Observable de RxJS para su uso con operadores de RxJS, librerías o efectos.
 
-**Benefits:**
-- Pass Signals into services or effects expecting Observables
-- Compose reactive pipelines with RxJS operators
+**Beneficios:**
+- Pasa Signals a servicios o efectos que esperan Observables.
+- Compone tuberías (pipelines) reactivas con operadores de RxJS.
 
-**Syntax:**
+**Sintaxis:**
 ```ts
 toObservable<T>(source: Signal<T>): Observable<T>
 ```
 
-**Example:**
+**Ejemplo:**
 ```ts
 import { Component } from '@angular/core';
 import { signal } from '@angular/core';
@@ -84,9 +84,9 @@ import { AsyncPipe } from '@angular/common';
     <h2>Signal → Observable</h2>
     @let v = value$ | async;
     @if(v) {
-      <p>Value = {{ v }}</p>
+      <p>Valor = {{ v }}</p>
     }
-    <button (click)="value.set(value() + 1)">Increment</button>
+    <button (click)="value.set(value() + 1)">Incrementar</button>
   `
 })
 export class SignalToRxJSComponent {
@@ -94,17 +94,17 @@ export class SignalToRxJSComponent {
   readonly value$ = toObservable(this.value);
 }
 ```
-Lets you use the signal value inside an async pipe.
+Permite usar el valor del signal dentro de un pipe `async`.
 
 ---
 
-## `takeUntilDestroyed()`: Automatic Cleanup
+## `takeUntilDestroyed()`: Limpieza Automática
 
-**Problem:** Forgetting to unsubscribe from Observables can cause memory leaks.
+**Problema:** Olvidar cancelar la suscripción a los Observables puede causar fugas de memoria (memory leaks).
 
-**Solution:** `takeUntilDestroyed()` automatically unsubscribes when the component is destroyed.
+**Solución:** `takeUntilDestroyed()` cancela automáticamente la suscripción cuando el componente es destruido.
 
-**Example:**
+**Ejemplo:**
 ```ts
 import { Component, ChangeDetectionStrategy } from '@angular/core';
 import { AsyncPipe } from '@angular/common';
@@ -117,8 +117,8 @@ import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
   standalone: true,
   imports: [AsyncPipe],
   template: `
-    <h2>Auto Unsubscribe Ticker</h2>
-    <p>Count = {{ counter | async }}</p>
+    <h2>Ticker con Cancelación Auto</h2>
+    <p>Contador = {{ counter | async }}</p>
   `
 })
 export class TakeUntilDestroyedComponent {
@@ -128,30 +128,30 @@ export class TakeUntilDestroyedComponent {
   );
 }
 ```
-No need for manual teardown logic or `ngOnDestroy`.
+No hay necesidad de lógica de cierre manual ni de `ngOnDestroy`.
 
-**Comparison:**
+**Comparación:**
 
-| Feature                | Traditional RxJS | With `takeUntilDestroyed()` |
-|------------------------|------------------|----------------------------|
-| Manual unsubscribe     | Required         | Handled automatically      |
-| Needs `ngOnDestroy`    | Yes              | No                         |
-| Boilerplate (Subject)  | Yes              | No                         |
-| Lifecycle-aware cleanup| Manual           | Built-in                   |
+| Característica             | RxJS Tradicional | Con `takeUntilDestroyed()` |
+|----------------------------|------------------|----------------------------|
+| Cancelación manual         | Requerida        | Manejada automáticamente   |
+| Necesita `ngOnDestroy`     | Sí               | No                         |
+| Código extra (Subject)     | Sí               | No                         |
+| Limpieza según ciclo de vida| Manual           | Integrada                  |
 
 ---
 
-## `rxResource`: Reactive Resource Management
+## `rxResource`: Gestión Reactiva de Recursos
 
-**Purpose:** Manage asynchronous resources using RxJS streams and Angular signals.
+**Propósito:** Gestionar recursos asíncronos utilizando flujos de RxJS y signals de Angular.
 
-**Features:**
-- Loading status
-- Error handling
-- Current value
-- Automatic state tracking and change detection
+**Características:**
+- Estado de carga.
+- Manejo de errores.
+- Valor actual.
+- Seguimiento automático del estado y detección de cambios.
 
-**Example:**
+**Ejemplo:**
 ```ts
 import { ChangeDetectionStrategy, Component, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
@@ -165,9 +165,9 @@ interface Post { id: number; title: string; }
   imports: [CommonModule],
   changeDetection: ChangeDetectionStrategy.OnPush,
   template: `
-    <h2>rxResource Todos Fetch</h2>
+    <h2>rxResource: Obtención de Todos</h2>
     @if (posts.isLoading()) {
-      <p>Loading…</p>
+      <p>Cargando…</p>
     }
     @if (posts.error()) {
       <p>Error: {{ posts.error()?.message }}</p>
@@ -179,7 +179,7 @@ interface Post { id: number; title: string; }
         }
       </ul>
     }
-    <button (click)="posts.reload()">Reload</button>
+    <button (click)="posts.reload()">Recargar</button>
   `
 })
 export class RxResourceTodosComponent {
@@ -190,28 +190,28 @@ export class RxResourceTodosComponent {
   });
 }
 ```
-Reactive signals for loading, error, and value states. Reload with `.reload()`.
+Signals reactivos para los estados de carga, error y valor. Recarga con `.reload()`.
 
-**Comparison:**
+**Comparación:**
 
-| Feature                  | Classic RxJS | `rxResource`         |
-|--------------------------|--------------|----------------------|
-| Manual subscription      | Required     | Not required         |
-| Loading state management | Manual       | Built-in signal      |
-| Error handling           | Manual       | Built-in signal      |
-| Change detection         | Manual       | Automatic            |
-| Reloading data           | Manual       | Easy `.reload()`     |
+| Característica             | RxJS Clásico | `rxResource`         |
+|----------------------------|--------------|----------------------|
+| Suscripción manual         | Requerida    | No requerida         |
+| Gestión de estado de carga | Manual       | Signal integrado     |
+| Manejo de errores          | Manual       | Signal integrado     |
+| Detección de cambios       | Manual       | Automática           |
+| Recarga de datos           | Manual       | `.reload()` sencillo |
 
 ---
 
-## `outputFromObservable` and `outputToObservable`: RxJS ↔ Signals Interop
+## `outputFromObservable` y `outputToObservable`: Interoperabilidad RxJS ↔ Signals
 
-**Purpose:** Bridge RxJS Observables and Angular OutputRefs (signal outputs).
+**Propósito:** Conectar Observables de RxJS con `OutputRef` de Angular (salidas de signal).
 
-- `outputFromObservable`: Converts an Observable to a signal output
-- `outputToObservable`: Converts a signal output back to an Observable
+- `outputFromObservable`: Convierte un Observable en una salida de signal.
+- `outputToObservable`: Convierte una salida de signal de nuevo en un Observable.
 
-**Example:**
+**Ejemplo:**
 ```ts
 import { ChangeDetectionStrategy, Component, signal, viewChild } from '@angular/core';
 import { outputFromObservable, outputToObservable, takeUntilDestroyed } from '@angular/core/rxjs-interop';
@@ -223,8 +223,8 @@ import { interval } from 'rxjs';
   standalone: true,
   changeDetection: ChangeDetectionStrategy.OnPush,
   template: `
-    <h3>Child Ticker</h3>
-    <p>Child tick = {{ tick }}</p>
+    <h3>Ticker Hijo</h3>
+    <p>Tick del hijo = {{ tick }}</p>
   `
 })
 export class ChildTickerComponent {
@@ -237,10 +237,10 @@ export class ChildTickerComponent {
   imports: [CommonModule, ChildTickerComponent],
   changeDetection: ChangeDetectionStrategy.OnPush,
   template: `
-    <h2>RxJS ↔ Signals Interop Demo</h2>
+    <h2>Demo Interoperabilidad RxJS ↔ Signals</h2>
     <app-child-ticker #child></app-child-ticker>
     @if (parentTick() !== undefined) {
-      <p>Parent sees tick = {{ parentTick() }}</p>
+      <p>El padre ve el tick = {{ parentTick() }}</p>
     }
   `
 })
@@ -255,17 +255,17 @@ export class TickDemoComponent {
   }
 }
 ```
-Child exposes a ticking signal output; parent consumes it as an Observable and updates a local signal.
+El hijo expone una salida de signal que genera ticks; el padre lo consume como un Observable y actualiza un signal local.
 
 ---
 
-## Summary
+## Resumen
 
-Angular’s RxJS interop utilities enable seamless migration and hybrid use of Signals and RxJS:
+Las utilidades de interoperabilidad RxJS de Angular permiten una migración fluida y el uso híbrido de Signals y RxJS:
 
-- Use `toSignal()` and `toObservable()` for conversion
-- Use `takeUntilDestroyed()` for automatic cleanup
-- Use `rxResource` for reactive resource management
-- Use `outputFromObservable` and `outputToObservable` for component output interop
+- Usa `toSignal()` y `toObservable()` para la conversión.
+- Usa `takeUntilDestroyed()` para la limpieza automática.
+- Usa `rxResource` para la gestión reactiva de recursos.
+- Usa `outputFromObservable` y `outputToObservable` para la interoperabilidad de las salidas de componentes.
 
-These tools help you progressively migrate to Signals or interconnect with RxJS-based APIs in libraries, services, or existing applications.
+Estas herramientas te ayudan a migrar progresivamente a Signals o a interconectar con APIs basadas en RxJS en librerías, servicios o aplicaciones existentes.

@@ -1,24 +1,24 @@
-# Signal Forms: Basic Usage (Two-Way Data Sync)
-> **⚠️ EXPERIMENTAL API WARNING**
+# Signal Forms: Uso Básico (Sincronización Bidireccional de Datos)
+> **⚠️ ADVERTENCIA: API EXPERIMENTAL**
 >
-> The Signal Forms API (`@angular/forms/signals`) is **experimental** as of Angular 21 (RC.0). The API is unstable and **should not be used in production**. It is intended for evaluation and feedback purposes only.
+> La API de Signal Forms (`@angular/forms/signals`) es **experimental** a partir de Angular 21.2.5. La API es inestable y **no debe usarse en producción**. Está destinada únicamente a fines de evaluación y retroalimentación.
 
-This guide covers the most basic use case for Signal Forms: creating a form that is directly synchronized with an existing `signal` in your component.
+Esta guía cubre el caso de uso más básico de Signal Forms: la creación de un formulario que se sincroniza directamente con un `signal` existente en tu componente.
 
-## Core Concept: `form(signal)`
+## Concepto Clave: `form(signal)`
 
-The `form()` function can be initialized by passing an existing `signal` that holds your data model.
+La función `form()` se puede inicializar pasando un `signal` existente que contenga tu modelo de datos.
 
-When you do this, Angular creates a **two-way synchronization** between the form's state and your original signal:
+Al hacer esto, Angular crea una **sincronización bidireccional** entre el estado del formulario y tu señal original:
 
-- Changes to the original signal will update the form.
-- Changes to the form (e.g., user input) will update the original signal.
+- Los cambios en la señal original actualizarán el formulario.
+- Los cambios en el formulario (por ejemplo, la entrada del usuario) actualizarán la señal original.
 
 ---
 
-## 1. Component Setup
+## 1. Configuración del Componente
 
-First, define your data as a `signal`. Then, create the form by passing that signal to the `form()` function.
+Primero, define tus datos como un `signal`. Luego, crea el formulario pasando esa señal a la función `form()`.
 
 ```typescript
 import { Component, signal } from "@angular/core";
@@ -27,66 +27,66 @@ import { JsonPipe } from "@angular/common";
 
 @Component({
   standalone: true,
-  imports: [JsonPipe, Field], // 'Field' is required for the [field] binding
+  imports: [JsonPipe, Field], // 'Field' es necesario para la vinculación [field]
 })
 export class SignalFormBasicComponent {
-  // 1. This is your "source of truth" data signal
+  // 1. Esta es tu señal de datos "fuente de verdad"
   user = signal({
     username: '',
     email: '',
   });
 
-  // 2. Create the form by linking it to the 'user' signal
-  // This establishes the two-way sync.
+  // 2. Crea el formulario vinculándolo a la señal 'user'
+  // Esto establece la sincronización bidireccional (two-way sync).
   form = form(this.user);
 }
 ```
 
-## 2. Template Binding with `[field]`
+## 2. Vinculación en la Plantilla con `[field]`
 
-In the template, import the `Field` directive to use the `[field]` binding. You can access the form's controls directly as properties on the form variable (e.g., `form.username`):
+En la plantilla, importa la directiva `Field` para usar la vinculación `[field]`. Puedes acceder a los controles del formulario directamente como propiedades de la variable del formulario (por ejemplo, `form.username`):
 
 ```html
 <input [field]="form.username" id="user-id" placeholder="username"/>
 <input [field]="form.email" id="user-username" placeholder="email"/>
 
-<pre>Form Value: {{ form().value() | json }}</pre>
-<pre>Data Signal: {{ user() | json }}</pre>
+<pre>Valor del Formulario: {{ form().value() | json }}</pre>
+<pre>Señal de Datos: {{ user() | json }}</pre>
 ```
 
-## 3. Two-Way Synchronization in Action
+## 3. Sincronización Bidireccional en Acción
 
-The example demonstrates two-way sync with two update methods:
+El ejemplo demuestra la sincronización bidireccional con dos métodos de actualización:
 
-### Path 1: Updating the Form Signal
+### Camino 1: Actualizar la Señal del Formulario
 
-This method updates the form's internal value signal directly. Because the form is linked to `this.user`, the user signal is also updated automatically.
+Este método actualiza directamente la señal del valor interno del formulario. Debido a que el formulario está vinculado a `this.user`, la señal del usuario también se actualiza automáticamente.
 
 ```typescript
 updateUsingForm() {
-  // This updates the form, which in turn updates 'this.user'
+  // Esto actualiza el formulario, lo que a su vez activa la actualización de 'this.user'
   this.form().value.set({ username: 'Alvaro', email: 'alvaro@dottech.io' });
 }
 ```
 
-### Path 2: Updating the Source Signal
+### Camino 2: Actualizar la Señal de Origen
 
-This method updates the original `user` signal. Because the form is linked to it, the form also updates automatically, and the changes appear in the input fields.
+Este método actualiza la señal `user` original. Debido a que el formulario está vinculado a ella, el formulario también se actualiza automáticamente y los cambios aparecen en los campos de entrada.
 
 ```typescript
 updateUsingSignal() {
-  // This updates 'this.user', which in turn updates the form
+  // Esto actualiza 'this.user', lo que a su vez actualiza el formulario
   this.user.set({ username: 'Carlos', email: 'carlos@dottech.io' });
 }
 ```
 
-User input (typing in the box) works just like Path 1: it updates the form signal, which then syncs that change back to the original user signal.
+La entrada del usuario (teclear en la caja) funciona igual que el Camino 1: actualiza la señal del formulario, que luego sincroniza ese cambio de vuelta a la señal original del usuario.
 
 ---
 
-## Full Code Example
+## Ejemplo de Código Completo
 
-This is the complete, functional component:
+Este es el componente funcional completo:
 
 ```typescript
 import { Component, signal } from "@angular/core";
@@ -99,17 +99,17 @@ import { JsonPipe } from "@angular/common";
   imports: [JsonPipe, Field],
   template: `
     <form (ngSubmit)="save()">
-      <input [field]="form.username" id="user-id" placeholder="username"/>
-      <input [field]="form.email" id="user-username" placeholder="email"/>
-      <button type="submit">SUBMIT</button>
+      <input [field]="form.username" id="user-id" placeholder="nombre de usuario"/>
+      <input [field]="form.email" id="user-username" placeholder="correo electrónico"/>
+      <button type="submit">ENVIAR</button>
     </form>
 
     <hr>
-    <pre>Form Value: {{ form().value() | json }}</pre>
-    <pre>Data Signal: {{ user() | json }}</pre>
+    <pre>Valor del Formulario: {{ form().value() | json }}</pre>
+    <pre>Señal de Datos: {{ user() | json }}</pre>
 
-    <button (click)="updateUsingSignal()" type="button">Update using signal</button>
-    <button (click)="updateUsingForm()" type="button">Update using form</button>
+    <button (click)="updateUsingSignal()" type="button">Actualizar usando señal</button>
+    <button (click)="updateUsingForm()" type="button">Actualizar usando formulario</button>
   `
 })
 export class SignalFormBasicComponent {
@@ -121,7 +121,7 @@ export class SignalFormBasicComponent {
   form = form(this.user);
 
   save(): void {
-    console.log('Form submitted', this.form().value());
+    console.log('Formulario enviado', this.form().value());
   }
 
   updateUsingSignal() {

@@ -1,21 +1,21 @@
-# Signal Forms: Built-in Synchronous Validators
+# Signal Forms: Validadores Síncronos Integrados
 
-> **⚠️ EXPERIMENTAL API WARNING**
+> **⚠️ ADVERTENCIA: API EXPERIMENTAL**
 >
-> The Signal Forms API (`@angular/forms/signals`) is **experimental** as of Angular 21 (RC.0). The API is unstable and **should not be used in production**.
+> La API de Signal Forms (`@angular/forms/signals`) es **experimental** a partir de Angular 21.2.5. La API es inestable y **no debe usarse en producción**.
 
-Signal Forms include a set of common, built-in validators that you can apply directly when defining your form.
+Signal Forms incluye un conjunto de validadores integrados comunes que puedes aplicar directamente al definir tu formulario.
 
-When using the `form(signal, callback)` syntax, you apply validators by calling them inside the callback function. These functions receive a `path` to the control as their first argument.
+Cuando utilizas la sintaxis `form(signal, callback)`, aplicas los validadores llamándolos dentro de la función de retorno (callback). Estas funciones reciben un objeto `path` (ruta) al control como su primer argumento.
 
-## 1. Applying Validators in the Component
+## 1. Aplicación de Validadores en el Componente
 
-In this syntax, the second argument to the `form()` function is a callback. This callback receives a `path` object that acts as a "map" to the controls defined in your data signal.
+En esta sintaxis, el segundo argumento de la función `form()` es un callback. Este callback recibe un objeto `path` que actúa como un "mapa" de los controles definidos en tu señal de datos.
 
-You simply call the validator functions (like `required` or `minLength`) and pass them the control path (e.g., `path.username`).
+Simplemente llamas a las funciones validadoras (como `required` o `minLength`) y les pasas la ruta del control (por ejemplo, `path.username`).
 
 ```typescript
-// In your component.ts
+// En tu componente.ts
 import { Component, signal } from "@angular/core";
 import { Field, form, maxLength, pattern, minLength, required } from '@angular/forms/signals';
 import { JsonPipe } from "@angular/common";
@@ -33,22 +33,22 @@ export class SignalFormBuiltinValidationComponent {
     email: '',
   });
 
-  // 1. The 'form' variable is a Signal<SignalFormGroup>
+  // 1. La variable 'form' es un Signal<SignalFormGroup>
   form = form(this.user, path => {
-    // 2. Apply validators to the 'username' control
-    required(path.username, { message: 'username is required' });
-    minLength(path.username, 3, { message: 'username must be at least 3 characters long' });
-    maxLength(path.username, 10, { message: 'username must be at most 10 characters long' });
+    // 2. Aplica validadores al control 'username'
+    required(path.username, { message: 'El nombre de usuario es obligatorio' });
+    minLength(path.username, 3, { message: 'El nombre de usuario debe tener al menos 3 caracteres' });
+    maxLength(path.username, 10, { message: 'El nombre de usuario debe tener como máximo 10 caracteres' });
     
-    // 3. Apply validators to the 'email' control
+    // 3. Aplica validadores al control 'email'
     required(path.email);
     pattern(path.email, /^[a-z0-9._%+-]+@[a-z0-9.-]+\.[a-z]{2,4}$/, { 
-      message: 'Please enter a valid email format' 
+      message: 'Introduce un formato de correo electrónico válido' 
     });
   });
 
   save(): void {
-    console.log('Form submitted', this.form().value());
+    console.log('Formulario enviado', this.form().value());
   }
 
   resetForm(){
@@ -57,33 +57,33 @@ export class SignalFormBuiltinValidationComponent {
 }
 ```
 
-## 2. Reading Errors in the Template
+## 2. Lectura de Errores en la Plantilla
 
-To display validation errors, you read the state from the individual controls.
+Para mostrar errores de validación, lees el estado de los controles individuales.
 
-- Since `form` is a signal, you access the group with `form()`.
-- You access the control with `form().username`.
-- Since the control is also a signal, you invoke it to get its state: `form().username()`.
-- You read the errors with the `.errors()` signal.
+- Dado que `form` es un signal, accedes al grupo con `form()`.
+- Accedes al control con `form().username`.
+- Dado que el control también es un signal, lo invocas para obtener su estado: `form().username()`.
+- Lees los errores con el signal `.errors()`.
 
-**HTML Example:**
+**Ejemplo HTML:**
 
 ```html
-<input [field]="form().username" id="user-id" placeholder="username"/>
-<input [field]="form().email" id="user-username" placeholder="email"/>
+<input [field]="form().username" id="user-id" placeholder="nombre de usuario"/>
+<input [field]="form().email" id="user-username" placeholder="correo electrónico"/>
 
-<button (click)="save()" [disabled]="form().invalid()">SUBMIT</button>
+<button (click)="save()" [disabled]="form().invalid()">ENVIAR</button>
 
-<pre>Form Value: {{form().value() | json}}</pre>
+<pre>Valor del Formulario: {{form().value() | json}}</pre>
 
-<button (click)="resetForm()">Reset Form</button>
+<button (click)="resetForm()">Restablecer Formulario</button>
 
 @if(form().invalid()){
-  <h2> Errors using json </h2>
+  <h2> Errores usando json </h2>
   <pre style="color:red">username: {{ form().username().errors() | json }}</pre>
   <pre style="color:red">email: {{ form().email().errors() | json }}</pre>
 
-  <h2> username Errors individual messages </h2>
+  <h2> Mensajes de error individuales para username </h2>
   @let usernameErrors = form().username().errors();
 
   @for (error of usernameErrors; track $index) {
@@ -92,30 +92,30 @@ To display validation errors, you read the state from the individual controls.
 }
 ```
 
-## 3. Common Built-in Validators
+## 3. Validadores Integrados Comunes
 
-All synchronous validators accept an optional `ValidatorOptions` object (e.g., `{ message: '...' }`) as their last argument to provide a custom error message.
+Todos los validadores síncronos aceptan un objeto opcional `ValidatorOptions` (por ejemplo, `{ message: '...' }`) como último argumento para proporcionar un mensaje de error personalizado.
 
 - `required(path, options?)`  
-  Checks that the control's value is not null, undefined, or an empty string.
+  Comprueba que el valor del control no sea nulo, indefinido o una cadena vacía.
 
 - `requiredTrue(path, options?)`  
-  Checks that the control's value is strictly `true`. (Useful for "I agree" checkboxes).
+  Comprueba que el valor del control sea estrictamente `true`. (Útil para casillas de "Acepto los términos").
 
 - `minLength(path, length, options?)`  
-  Checks that the string value's length is greater than or equal to the length.
+  Comprueba que la longitud del valor de la cadena sea mayor o igual a `length`.
 
 - `maxLength(path, length, options?)`  
-  Checks that the string value's length is less than or equal to the length.
+  Comprueba que la longitud del valor de la cadena sea menor o igual a `length`.
 
 - `email(path, options?)`  
-  Checks that the string value matches a basic email format regular expression.
+  Comprueba que el valor de la cadena coincida con una expresión regular básica de formato de correo electrónico.
 
 - `pattern(path, regex, options?)`  
-  Checks that the string value matches the provided RegExp.
+  Comprueba que el valor de la cadena coincida con la RegExp (expresión regular) proporcionada.
 
 - `min(path, minValue, options?)`  
-  Checks that the number value is greater than or equal to `minValue`.
+  Comprueba que el valor numérico sea mayor o igual a `minValue`.
 
 - `max(path, maxValue, options?)`  
-  Checks that the number value is less than or equal to `maxValue`.
+  Comprueba que el valor numérico sea menor o igual a `maxValue`.

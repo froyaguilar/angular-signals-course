@@ -1,26 +1,26 @@
-# 🔄 Communication Between Components: Decorators vs Signals
+# 🔄 Comunicación entre Componentes: Decoradores vs Signals
 
-Angular enables **component communication** using two main approaches:
+Angular permite la **comunicación entre componentes** utilizando dos enfoques principales:
 
-- Traditional `@Input()` / `@Output()` decorators
-- Modern `input()` / `output()` signal APIs (recommended for signal-based apps)
+- Decoradores tradicionales `@Input()` / `@Output()`.
+- Nuevas APIs de Signal `input()` / `output()` (recomendadas para aplicaciones basadas en signals).
 
-Below is a comparison of both styles with practical examples.
+A continuación, se presenta una comparación de ambos estilos con ejemplos prácticos.
 
 ---
 
-## 🧵 Traditional: `@Input()` + `@Output()` + `EventEmitter`
+## 🧵 Tradicional: `@Input()` + `@Output()` + `EventEmitter`
 
-The classic Angular pattern is imperative and verbose, often requiring lifecycle hooks like `ngOnChanges`.
+El patrón clásico de Angular es imperativo y verboso, y a menudo requiere ganchos de ciclo de vida (lifecycle hooks) como `ngOnChanges`.
 
-### Child Component Example
+### Ejemplo de Componente Hijo
 
 ```ts
 @Component({
   selector: 'app-child-decorator',
   template: `
-    <p>Count = {{ count }}</p>
-    <button (click)="notify()">Notify Parent</button>
+    <p>Contador = {{ count }}</p>
+    <button (click)="notify()">Notificar al Padre</button>
   `
 })
 export class ChildDecoratorComponent implements OnChanges {
@@ -28,7 +28,7 @@ export class ChildDecoratorComponent implements OnChanges {
   @Output() increment = new EventEmitter<void>();
 
   ngOnChanges(ch: SimpleChanges) {
-    console.log('🔄 [ngOnChanges] count changed to', this.count);
+    console.log('🔄 [ngOnChanges] count cambió a', this.count);
   }
 
   notify() {
@@ -37,14 +37,14 @@ export class ChildDecoratorComponent implements OnChanges {
 }
 ```
 
-### Parent Component Example
+### Ejemplo de Componente Padre
 
 ```ts
 @Component({
   selector: 'app-parent-decorator',
   imports: [ChildDecoratorComponent],
   template: `
-    <h2>Parent using decorators</h2>
+    <h2>Padre usando decoradores</h2>
     <button (click)="incrementCount()">+1</button>
     <app-child-decorator
       [count]="count"
@@ -60,31 +60,31 @@ export class ParentDecoratorComponent {
   }
 
   onIncrement() {
-    console.log('🔔 Child requested increment');
+    console.log('🔔 El hijo solicitó un incremento');
     this.count++;
   }
 }
 ```
 
-**Downsides:**
-- Must manually declare `EventEmitter`
-- Requires lifecycle hooks (e.g., `ngOnChanges`) to track updates
-- Boilerplate-heavy and imperative
+**Desventajas:**
+- Debe declararse manualmente `EventEmitter`.
+- Requiere ganchos de ciclo de vida (ej. `ngOnChanges`) para rastrear actualizaciones.
+- Mucho código repetitivo (boilerplate) e imperativo.
 
 ---
 
-## ✅ Modern: Signals-Based `input()` and `output()`
+## ✅ Moderno: `input()` y `output()` basados en Signals
 
-Angular’s signals API simplifies input/output binding using reactive primitives.
+La API de signals de Angular simplifica el enlace de entrada/salida utilizando primitivas reactivas.
 
-### Child Component Example
+### Ejemplo de Componente Hijo
 
 ```ts
 @Component({
   selector: 'app-child-signals',
   template: `
-    <p>Count = {{ count() }}</p>
-    <button (click)="notify()">Notify Parent</button>
+    <p>Contador = {{ count() }}</p>
+    <button (click)="notify()">Notificar al Padre</button>
   `
 })
 export class ChildSignalsComponent {
@@ -93,7 +93,7 @@ export class ChildSignalsComponent {
 
   constructor() {
     effect(() => {
-      console.log('🔄 [effect] count changed to', this.count());
+      console.log('🔄 [effect] count cambió a', this.count());
     });
   }
 
@@ -103,7 +103,7 @@ export class ChildSignalsComponent {
 }
 ```
 
-### Parent Component Example
+### Ejemplo de Componente Padre
 
 ```ts
 @Component({
@@ -111,13 +111,13 @@ export class ChildSignalsComponent {
   imports: [ChildSignalsComponent],
   changeDetection: ChangeDetectionStrategy.OnPush,
   template: `
-    <h2>Parent using signals</h2>
+    <h2>Padre usando signals</h2>
     <button (click)="incrementCount()">+1</button>
     <app-child-signals
       [count]="count()"
       (increment)="onIncrement()">
     </app-child-signals>
-    <p>Parent sees count = {{ count() }}</p>
+    <p>El padre ve el contador = {{ count() }}</p>
   `
 })
 export class ParentSignalsComponent {
@@ -128,44 +128,45 @@ export class ParentSignalsComponent {
   }
 
   onIncrement() {
-    console.log('🔔 [Signal] Child requested increment');
+    console.log('🔔 [Signal] El hijo solicitó un incremento');
     this.incrementCount();
   }
 }
 ```
 
-**Benefits:**
-- `input()` is reactive — no need for `ngOnChanges`
-- `output()` is lightweight — no need for `EventEmitter`
-- Integrates with signals and `effect()`
-- Cleaner and more declarative
+**Beneficios:**
+- `input()` es reactivo — no es necesario `ngOnChanges`.
+- `output()` es ligero — no es necesario `EventEmitter`.
+- Se integra con signals y `effect()`.
+- Más limpio y declarativo.
 
 ---
 
-## ⚖️ Comparison Table
+## ⚖️ Tabla Comparativa
 
-| Feature                    | Decorator API (`@Input` / `@Output`) | Signals API (`input` / `output`) |
-|----------------------------|--------------------------------------|----------------------------------|
-| Reactive input tracking    | ❌ Manual with `ngOnChanges`          | ✅ Built-in via signals          |
-| Output emission            | ❌ Uses `EventEmitter`                | ✅ Uses signal-style `.emit()`   |
-| Boilerplate                | ❌ More code                          | ✅ Minimal                      |
-| Signals integration        | ❌ Not reactive by default            | ✅ Seamless                     |
-
----
-
-## 📌 When to Prefer Each
-
-| Use Case                        | Prefer…                   |
-|----------------------------------|---------------------------|
-| Legacy or hybrid apps            | `@Input()` / `@Output()`  |
-| New signal-based apps            | `input()` / `output()`    |
-| Precise lifecycle control needed | Decorator API             |
-| Concise, reactive communication  | Signal API                |
+| Característica             | API de Decoradores (`@Input` / `@Output`) | API de Signals (`input` / `output`) |
+|----------------------------|------------------------------------------|-------------------------------------|
+| Rastreo de entrada reactivo| ❌ Manual con `ngOnChanges`               | ✅ Integrado mediante signals        |
+| Emisión de salida          | ❌ Usa `EventEmitter`                     | ✅ Usa `.emit()` estilo signal      |
+| Código extra (Boilerplate) | ❌ Más código                             | ✅ Mínimo                           |
+| Integración con Signals    | ❌ No es reactivo por defecto             | ✅ Fluida                           |
 
 ---
 
-## 🔚 Summary
+## 📌 Cuándo preferir cada uno
 
-Angular's signals-based inputs/outputs provide a cleaner, more reactive way to communicate between components, replacing `EventEmitter` and `ngOnChanges` with declarative primitives.
+| Caso de Uso                     | Preferir…                |
+|---------------------------------|--------------------------|
+| Aplicaciones legadas o híbridas | `@Input()` / `@Output()` |
+| Nuevas aplicaciones de signals  | `input()` / `output()`   |
+| Control preciso de ciclo de vida| API de Decoradores       |
+| Comunicación concisa y reactiva | API de Signals           |
 
-For new signal-based apps, prefer `input()` and `output()` to reduce boilerplate and improve reactivity.
+---
+
+## 🔚 Resumen
+
+Las entradas/salidas basadas en signals de Angular proporcionan una forma más limpia y reactiva de comunicarse entre componentes, sustituyendo `EventEmitter` y `ngOnChanges` por primitivas declarativas.
+
+Para nuevas aplicaciones basadas en signals, prefiere `input()` y `output()` para reducir el código repetitivo y mejorar la reactividad.
+utput()` to reduce boilerplate and improve reactivity.

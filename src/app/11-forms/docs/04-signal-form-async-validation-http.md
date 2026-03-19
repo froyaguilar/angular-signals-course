@@ -1,46 +1,46 @@
-# Signal Forms: Async Validation with `validateHttp`
+# Signal Forms: Validación Asíncrona con `validateHttp`
 
-> **⚠️ EXPERIMENTAL API WARNING**
+> **⚠️ ADVERTENCIA: API EXPERIMENTAL**
 >
-> The Signal Forms API (`@angular/forms/signals`) is **experimental** as of Angular 21 (RC.0). The API is unstable and **should not be used in production**.
+> La API de Signal Forms (`@angular/forms/signals`) es **experimental** a partir de Angular 21.2.5. La API es inestable y **no debe usarse en producción**.
 
-Signal Forms provide a powerful helper function, **`validateHttp`**, to handle common asynchronous validation scenarios, such as checking if a value is valid by making an HTTP `GET` request (e.g., "is this username already taken?"). This helper manages `HttpClient`, debouncing, and the `pending` state for you.
+Signal Forms proporciona una potente función de ayuda, **`validateHttp`**, para manejar escenarios comunes de validación asíncrona, como comprobar si un valor es válido realizando una petición HTTP `GET` (por ejemplo, "¿está este nombre de usuario ya en uso?"). Este ayudante gestiona el `HttpClient`, el debounce (tiempo de espera) y el estado `pending` (pendiente) por ti.
 
-## 1. Key Function and Properties
+## 1. Función y Propiedades Clave
 
 ### `validateHttp(path, options)`
 
-Call this function inside the `form()` validation callback, just like synchronous validators.
+Llama a esta función dentro del callback de validación de `form()`, al igual que los validadores síncronos.
 
-- **`path`**: The path to the control to validate (e.g., `path.username`).
-- **`options`**: An object to configure the HTTP request and response handling.
+- **`path`**: La ruta al control que quieres validar (por ejemplo, `path.username`).
+- **`options`**: Un objeto para configurar la petición HTTP y el manejo de la respuesta.
 
-#### The `options` Object
+#### El Objeto `options`
 
 - **`request: ({ value }) => string | undefined`**
-  - Receives the control's context, including its `value` as a `Signal`.
-  - Executed every time the value changes (after a default debounce).
-  - Return the **URL string** to be called, or `undefined` to skip validation (e.g., for empty fields).
+  - Recibe el contexto del control, incluyendo su `value` como un `Signal`.
+  - Se ejecuta cada vez que cambia el valor (después de un debounce predeterminado).
+  - Devuelve la **cadena URL** a llamar, o `undefined` para omitir la validación (por ejemplo, para campos vacíos).
 
 - **`onSuccess: (response: any) => ValidationErrors | null`**
-  - Called if the HTTP request is **successful** (e.g., HTTP 200).
-  - Return `null` or `[]` if the value is **valid**.
-  - Return an error (or array of errors), typically using `customError`, if the value is **invalid**.
+  - Se llama si la petición HTTP tiene **éxito** (por ejemplo, HTTP 200).
+  - Devuelve `null` o `[]` si el valor es **válido**.
+  - Devuelve un error (o conjunto de errores), típicamente usando `customError`, si el valor es **inválido**.
 
 - **`onError: (error: HttpErrorResponse) => ValidationErrors`**
-  - Called if the HTTP request **fails** (e.g., HTTP 404, 500, or a network error).
-  - Return an error array, usually to indicate a network issue.
+  - Se llama si la petición HTTP **falla** (por ejemplo, HTTP 404, 500 o un error de red).
+  - Devuelve un array de errores, generalmente para indicar un problema de red.
 
-## 2. The `pending` State
+## 2. El Estado `pending`
 
-`validateHttp` automatically manages the control's **`pending`** state.
+`validateHttp` gestiona automáticamente el estado **`pending`** del control.
 
-- `form().username().pending()`: Returns `true` while the HTTP request is in-flight.
-- Useful for showing loading spinners or disabling the submit button.
+- `form().username().pending()`: Devuelve `true` mientras la petición HTTP está en curso.
+- Útil para mostrar indicadores de carga o deshabilitar el botón de envío.
 
-## 3. Component Setup Example
+## 3. Ejemplo de Configuración del Componente
 
-In this example, `validateHttp` is attached to `path.username`. It queries the public `jsonplaceholder` API. If the `onSuccess` callback receives a non-empty array (meaning a user with that name was found), it returns a `customError`.
+En este ejemplo, `validateHttp` se asocia a `path.username`. Realiza una consulta a la API pública de `jsonplaceholder`. Si el callback `onSuccess` recibe un array no vacío (lo que significa que se encontró un usuario con ese nombre), devuelve un `customError`.
 
 ```typescript
 import { Component, signal } from "@angular/core";
@@ -69,8 +69,8 @@ export class SignalFormCustomAsyncValidationHttpComponent {
   });
 
   form = form(this.user, path => {
-    required(path.username, { message: 'username is required' });
-    minLength(path.username, 3, { message: 'username must be at least 3 characters long' });
+    required(path.username, { message: 'El nombre de usuario es obligatorio' });
+    minLength(path.username, 3, { message: 'El nombre de usuario debe tener al menos 3 caracteres' });
     required(path.email);
     pattern(path.email, /^[a-z0-9._%+-]+@[a-z0-9.-]+\.[a-z]{2,4}$/);
 
@@ -79,15 +79,15 @@ export class SignalFormCustomAsyncValidationHttpComponent {
         value() ? `https://jsonplaceholder.typicode.com/users?username=${value()}` : undefined,
       onSuccess: (result: any[]) =>
         result && result.length
-          ? [customError({ kind: 'usernameNotAvailable', message: 'Username already taken' })]
+          ? [customError({ kind: 'usernameNotAvailable', message: 'El nombre de usuario ya está en uso' })]
           : [],
       onError: (res: any) =>
-        [customError({ kind: 'NetworkError', message: 'Network Error' })]
+        [customError({ kind: 'NetworkError', message: 'Error de red' })]
     });
   });
 
   save(): void {
-    console.log('Form submitted', this.form().value());
+    console.log('Formulario enviado', this.form().value());
   }
 
   resetForm(){
@@ -96,32 +96,32 @@ export class SignalFormCustomAsyncValidationHttpComponent {
 }
 ```
 
-## 4. Template Example
+## 4. Ejemplo de Plantilla
 
-The template uses `form().username` for bindings and state access, since `form` is a `Signal<SignalFormGroup>`.
+La plantilla utiliza `form().username` para las vinculaciones y el acceso al estado, ya que `form` es un `Signal<SignalFormGroup>`.
 
 ```html
-<input [field]="form().username" id="user-id" placeholder="username"/>
-<input [field]="form().email" id="user-username" placeholder="email"/>
+<input [field]="form().username" id="user-id" placeholder="nombre de usuario"/>
+<input [field]="form().email" id="user-username" placeholder="correo electrónico"/>
 
 <button (click)="save()" [disabled]="form().invalid() || form().pending()">
-  SUBMIT
+  ENVIAR
 </button>
 
 <hr>
 @if (form().username().pending()) {
-   <small>Checking availability for {{ form().username().value() }}...</small>
+   <small>Comprobando disponibilidad para {{ form().username().value() }}...</small>
 }
 
-<pre>Form Value: {{form().value() | json}}</pre>
-<button (click)="resetForm()">Reset Form</button>
+<pre>Valor del Formulario: {{form().value() | json}}</pre>
+<button (click)="resetForm()">Restablecer Formulario</button>
 
 @if(form().invalid()){
-  <h2> Errors </h2>
+  <h2> Errores </h2>
   <pre style="color:red">username: {{ form().username().errors() | json }}</pre>
   <pre style="color:red">email: {{ form().email().errors() | json }}</pre>
 
-  <h2> username Errors individual messages </h2>
+  <h2> Mensajes de error individuales para username </h2>
   @let usernameErrors = form().username().errors();
 
   @for (error of usernameErrors; track $index) {

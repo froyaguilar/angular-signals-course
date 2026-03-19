@@ -1,25 +1,25 @@
-# 🔗 Tutorial: Using `linkedSignal` in Angular
+# 🔗 Tutorial: Uso de `linkedSignal` en Angular
 
-This tutorial explains how to use **`linkedSignal`** in Angular, and shows **why it's useful for managing consistency in concurrent state updates**. We'll walk through two examples:
+Este tutorial explica cómo utilizar **`linkedSignal`** en Angular y muestra **por qué es útil para gestionar la consistencia en las actualizaciones de estado concurrentes**. Analizaremos dos ejemplos:
 
-- A race condition caused by separate signals
-- A solution using `linkedSignal` for atomic updates
-
----
-
-## 🧠 What is `linkedSignal`?
-
-In Angular, `linkedSignal` creates a **derived writable signal** based on one or more dependencies. It lets you:
-
-- **Read from dependent signals**
-- **Write back a consistent update across all of them**, atomically
-- Prevent **inconsistent state** in async or concurrent updates
+- Una condición de carrera (race condition) causada por señales separadas.
+- Una solución utilizando `linkedSignal` para actualizaciones atómicas.
 
 ---
 
-## 🐛 Problem: Race Conditions with Independent Signals
+## 🧠 ¿Qué es `linkedSignal`?
 
-Here's a naive approach using two separate `signal()` values for `x` and `y`, and a `computed()` signal for their combination:
+En Angular, `linkedSignal` crea un **signal de escritura derivado** basado en una o más dependencias. Te permite:
+
+- **Leer de señales dependientes**.
+- **Escribir una actualización consistente en todas ellas**, de forma atómica.
+- Prevenir el **estado inconsistente** en actualizaciones asíncronas o concurrentes.
+
+---
+
+## 🐛 Problema: Condiciones de Carrera con Señales Independientes
+
+Aquí hay un enfoque ingenuo utilizando dos señales separadas `signal()` para `x` e `y`, y una señal `computed()` para su combinación:
 
 ### `LinkedSignalRaceComponent`
 
@@ -29,9 +29,9 @@ Here's a naive approach using two separate `signal()` values for `x` and `y`, an
   imports: [JsonPipe],
   changeDetection: ChangeDetectionStrategy.OnPush,
   template: `
-    <h1>point = {{ point() | json }}</h1>
+    <h1>punto = {{ point() | json }}</h1>
     <button (click)="moveConcurrently(1, 1)">
-      Move Concurrently (+1, +1) Twice
+      Mover Concurrentemente (+1, +1) dos veces
     </button>
   `
 })
@@ -51,27 +51,27 @@ export class LinkedSignalRaceComponent {
     const curY = this.y();
 
     setTimeout(() => {
-      console.log('Setting x to', curX + dx);
+      console.log('Estableciendo x a', curX + dx);
       this.x.set(curX + dx);
     }, Math.random() * 1000);
 
     setTimeout(() => {
-      console.log('Setting y to', curY + dy);
+      console.log('Estableciendo y a', curY + dy);
       this.y.set(curY + dy);
     }, Math.random() * 1000);
   }
 }
 ```
-## ❌ Problem
+## ❌ Problema
 
-If updates to `x` and `y` happen out of order (due to `setTimeout`), the computed `point` may briefly show an inconsistent value.  
-This is a classic race condition in UI state.
+Si las actualizaciones de `x` e `y` ocurren fuera de orden (debido a `setTimeout`), el `point` computado puede mostrar brevemente un valor inconsistente.
+Esta es una condición de carrera clásica en el estado de la interfaz de usuario.
 
 ---
 
-## ✅ Solution: Use `linkedSignal` for Atomic Updates
+## ✅ Solución: Usar `linkedSignal` para Actualizaciones Atómicas
 
-The fix is to use `linkedSignal()` — which combines reading and writing into a single atomic update.
+La solución es utilizar `linkedSignal()`, que combina la lectura y la escritura en una única actualización atómica.
 
 ### `LinkedSignalComponent`
 
@@ -82,9 +82,9 @@ The fix is to use `linkedSignal()` — which combines reading and writing into a
   imports: [JsonPipe],
   changeDetection: ChangeDetectionStrategy.OnPush,
   template: `
-    <h1>point = {{ point() | json }}</h1>
+    <h1>punto = {{ point() | json }}</h1>
     <button (click)="moveConcurrently(1, 1)">
-      Move Concurrently (+1, +1) Twice
+      Mover Concurrentemente (+1, +1) dos veces
     </button>
   `
 })
@@ -104,48 +104,42 @@ export class LinkedSignalComponent {
     setTimeout(updater, Math.random() * 1000);
     setTimeout(updater, Math.random() * 1000);
   }
-
-  // Optional: simpler sync version
-  // private move(dx: number, dy: number) {
-  //   this.point.update(({ x, y }) => ({ x: x + dx, y: y + dy }));
-  // }
 }
 ```
 
 ---
 
-## ✅ Benefits
+## ✅ Beneficios
 
-- `point.update()` reads both `x` and `y` together
-- Updates are batched atomically, ensuring consistent state
-- No risk of stale reads or inconsistent combinations
-
----
-
-## ✨ Comparison
-
-| Feature                      | Independent Signals + `computed()` | `linkedSignal()`      |
-|------------------------------|:----------------------------------:|:---------------------:|
-| Async-safe updates           | ❌ No                              | ✅ Yes                |
-| Update consistency           | ❌ Can mismatch                    | ✅ Always in sync     |
-| Atomic read/write            | ❌ Split across signals            | ✅ Unified            |
-| Writable derived state       | ❌ Not directly                    | ✅ WritableSignal     |
+- `point.update()` lee tanto `x` como `y` a la vez.
+- Las actualizaciones se agrupan de forma atómica, garantizando un estado consistente.
+- Sin riesgo de lecturas obsoletas o combinaciones inconsistentes.
 
 ---
 
-## 🧩 When to Use `linkedSignal`
+## ✨ Comparación
 
-Use `linkedSignal` when:
-
-- You have multiple related signals that need to stay in sync
-- You need derived values that can be updated in one step
-- You want to avoid race conditions in async environments
-- You're building composable state models with minimal bugs
-
+| Característica               | Señales Independientes + `computed()` | `linkedSignal()`      |
+|------------------------------|:------------------------------------:|:---------------------:|
+| Actualizaciones seguras asínc.| ❌ No                                 | ✅ Sí                 |
+| Consistencia de actualización | ❌ Puede desajustarse                 | ✅ Siempre en sincronía|
+| Lectura/escritura atómica     | ❌ Dividida entre señales             | ✅ Unificada           |
+| Estado derivado de escritura  | ❌ No directamente                    | ✅ WritableSignal      |
 
 ---
 
-## 📝 Summary
+## 🧩 Cuándo usar `linkedSignal`
 
-`linkedSignal` is the right tool for advanced signal scenarios where atomicity, consistency, and clarity matter.  
-It ensures reactive values stay coherent — especially under concurrent or asynchronous updates.
+Usa `linkedSignal` cuando:
+
+- Tengas múltiples señales relacionadas que deban mantenerse sincronizadas.
+- Necesites valores derivados que puedan actualizarse en un solo paso.
+- Quieras evitar condiciones de carrera en entornos asíncronos.
+- Estés construyendo modelos de estado componibles con menos errores.
+
+---
+
+## 📝 Resumen
+
+`linkedSignal` es la herramienta adecuada para escenarios de señales avanzados donde la atomicidad, la consistencia y la claridad importan.
+Garantiza que los valores reactivos permanezcan coherentes, especialmente bajo actualizaciones concurrentes o asíncronas.

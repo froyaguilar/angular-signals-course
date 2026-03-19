@@ -1,25 +1,25 @@
-# 👁️ Signal-based View Queries in Angular
+# 👁️ Consultas de Vista basadas en Signals en Angular
 
-Angular now supports **signal-based view queries**, allowing you to reference DOM elements or components using **signals** instead of decorators like `@ViewChild`. This approach improves **reactivity**, simplifies **timing concerns**, and aligns better with `ChangeDetectionStrategy.OnPush`.
-
----
-
-## 🔎 What Are Signal View Queries?
-
-Signal queries such as `viewChild`, `contentChild`, `viewChildren`, and `contentChildren` are **functions** that return **`Signal<T | null>`** or **`Signal<T[]>`**. They replace Angular's decorator-based queries like `@ViewChild()` and `@ContentChild()`.
-
-| Classic Query (Decorator) | Signal Query (Function) |
-|---------------------------|--------------------------|
-| `@ViewChild(...)`         | `viewChild(...)`         |
-| `@ContentChild(...)`      | `contentChild(...)`      |
-| `@ViewChildren(...)`      | `viewChildren(...)`      |
-| `@ContentChildren(...)`   | `contentChildren(...)`   |
-
-> 💡 These functions are fully **reactive** and return **signals** that update when the queried elements change.
+Angular ahora admite **consultas de vista basadas en signals**, lo que permite hacer referencia a elementos del DOM o componentes utilizando **signals** en lugar de decoradores como `@ViewChild`. Este enfoque mejora la **reactividad**, simplifica los **problemas de sincronización** y se alinea mejor con `ChangeDetectionStrategy.OnPush`.
 
 ---
 
-## 🧱 Example 1: Classic `@ViewChild` + `ChangeDetectorRef`
+## 🔎 ¿Qué son las Consultas de Vista de Signal?
+
+Las consultas de signal como `viewChild`, `contentChild`, `viewChildren` y `contentChildren` son **funciones** que devuelven **`Signal<T | null>`** o **`Signal<T[]>`**. Sustituyen a las consultas basadas en decoradores de Angular como `@ViewChild()` y `@ContentChild()`.
+
+| Consulta Clásica (Decorador) | Consulta de Signal (Función) |
+|------------------------------|-------------------------------|
+| `@ViewChild(...)`            | `viewChild(...)`              |
+| `@ContentChild(...)`         | `contentChild(...)`           |
+| `@ViewChildren(...)`         | `viewChildren(...)`           |
+| `@ContentChildren(...)`      | `contentChildren(...)`        |
+
+> 💡 Estas funciones son completamente **reactivas** y devuelven **signals** que se actualizan cuando los elementos consultados cambian.
+
+---
+
+## 🧱 Ejemplo 1: `@ViewChild` Clásico + `ChangeDetectorRef`
 
 ```ts
 import {
@@ -36,8 +36,8 @@ import {
   selector: 'app-no-signals',
   changeDetection: ChangeDetectionStrategy.OnPush,
   template: `
-    <input #inputRef type="text" placeholder="Type something…" (input)="readValue()" />
-    <p>Value = {{ value }}</p>
+    <input #inputRef type="text" placeholder="Escribe algo…" (input)="readValue()" />
+    <p>Valor = {{ value }}</p>
   `
 })
 export class QueriesDecoratorComponent implements AfterViewInit {
@@ -47,25 +47,25 @@ export class QueriesDecoratorComponent implements AfterViewInit {
   value = '';
 
   ngAfterViewInit() {
-    console.log('📦 Input is ready:', this.inputRef);
+    console.log('📦 El input está listo:', this.inputRef);
   }
 
   readValue() {
-    // ❌ Manual read + manual change detection
+    // ❌ Lectura manual + detección de cambios manual
     this.value = this.inputRef.nativeElement.value;
-    this.cdr.markForCheck(); // Needed with OnPush
+    this.cdr.markForCheck(); // Necesario con OnPush
   }
 }
 ```
 
-**Drawbacks:**
-- Requires `AfterViewInit` to access the element.
-- Manual change detection (`markForCheck()`) is needed.
-- Doesn't align well with signals or reactive UI updates.
+**Inconvenientes:**
+- Requiere `AfterViewInit` para acceder al elemento.
+- Se necesita la detección de cambios manual (`markForCheck()`).
+- No se alinea bien con los signals ni con las actualizaciones reactivas de la interfaz de usuario.
 
 ---
 
-## ✅ Example 2: `viewChild()` with Signals
+## ✅ Ejemplo 2: `viewChild()` con Signals
 
 ```ts
 import {
@@ -80,15 +80,15 @@ import {
   selector: 'app-with-signals',
   changeDetection: ChangeDetectionStrategy.OnPush,
   template: `
-    <input #inputRef type="text" placeholder="Type something…" (input)="onInput($event)" />
-    <p>Value = {{ value() }}</p>
+    <input #inputRef type="text" placeholder="Escribe algo…" (input)="onInput($event)" />
+    <p>Valor = {{ value() }}</p>
   `
 })
 export class QueriesSignalsComponent {
-  // ✅ viewChild returns a Signal<ElementRef | null>
+  // ✅ viewChild devuelve un Signal<ElementRef | null>
   readonly inputRef = viewChild('inputRef', { read: ElementRef });
 
-  // ✅ Writable signal to hold the input value
+  // ✅ Signal de escritura para mantener el valor de entrada
   readonly value = signal('');
 
   onInput(event: Event): void {
@@ -100,27 +100,27 @@ export class QueriesSignalsComponent {
 }
 ```
 
-**Advantages:**
-- No `ngAfterViewInit` needed — `inputRef()` becomes non-null automatically when ready.
-- React to DOM changes declaratively.
-- Fully compatible with `ChangeDetectionStrategy.OnPush`.
-- Aligns with the signal-first Angular direction.
+**Ventajas:**
+- No se necesita `ngAfterViewInit` — `inputRef()` pasa a ser no nulo automáticamente cuando está listo.
+- Reacciona a los cambios del DOM de forma declarativa.
+- Totalmente compatible con `ChangeDetectionStrategy.OnPush`.
+- Se alinea con la dirección de Angular de priorizar los signals.
 
 ---
 
-## 💡 Summary Table
+## 💡 Tabla de Resumen
 
-| Feature                      | `@ViewChild`         | `viewChild()` (Signal)   |
+| Característica               | `@ViewChild`         | `viewChild()` (Signal)   |
 |------------------------------|----------------------|--------------------------|
-| Reactivity                   | ❌ Static            | ✅ Reactive `Signal<T>`   |
-| Timing needed (`AfterViewInit`)| ✅ Required         | ❌ Not needed            |
-| Suitable for Signals         | ❌ Manual sync       | ✅ Fully compatible      |
-| Works with OnPush            | ⚠️ Needs `markForCheck()` | ✅ Automatic      |
+| Reactividad                  | ❌ Estática           | ✅ `Signal<T>` reactivo   |
+| Sincronización necesaria (`AfterViewInit`)| ✅ Requerida | ❌ No es necesaria      |
+| Adecuado para Signals        | ❌ Sincronización manual | ✅ Totalmente compatible  |
+| Funciona con OnPush          | ⚠️ Necesita `markForCheck()` | ✅ Automático            |
 
 ---
 
-## 🧠 When to Use
+## 🧠 Cuándo usarlo
 
-Use `viewChild`, `viewChildren`, etc. whenever you're working with signals, OnPush, or reactive apps.
+Usa `viewChild`, `viewChildren`, etc. siempre que trabajes con signals, OnPush o aplicaciones reactivas.
 
-You can still use the decorator style in non-reactive code, but signal queries are more future-proof and cleaner for dynamic UIs.
+Todavía puedes usar el estilo de decorador en código no reactivo, pero las consultas de signal están más preparadas para el futuro y son más limpias para las interfaces de usuario dinámicas.
